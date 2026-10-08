@@ -6,7 +6,6 @@ const i18nData = {
     privacyBadge: "純前端離線解析・零數據外流風險",
     langBtn: "English",
 
-    // 指引與說明區塊
     guideTitle: "系統說明與操作指引",
     guideIntro: "本工具為東淦工程有限公司（Jumbo Orient Contracting Limited）自主研發之考勤異常快篩引擎。系統自動將「全天缺勤 (ABS)」與「漏打收工卡」列為最高優先級置頂高亮，並提供一鍵分類過濾。",
     guideStepTitle: "操作步驟：",
@@ -24,25 +23,21 @@ const i18nData = {
       "早退判定：星期一至五，收工打卡早過 17:30（Last_Clk < 17.30 且非半日假）。"
     ],
 
-    // 上傳區域
     dropTitle: "點擊選擇或拖曳考勤 Excel 檔到此處",
     dropSubtitle: "支援原廠系統導出之 .xls 及 .xlsx 檔案",
     dropNotice: "資安承諾：所有數據運算均在您的本機瀏覽器內完成，絕不傳輸至任何外部伺服器。",
 
-    // 狀態與按鈕
     processing: "正在解析檔案並執行本地業務規則審計...",
     complete: "審計完成！共篩選出 {count} 筆打卡異常記錄（缺勤與漏打卡已置頂）。",
     downloadBtn: "下載 Problem.xlsx 報表",
     noData: "太棒了！未偵測到任何異常打卡記錄。",
 
-    // 快速過濾標籤
     filterAll: "全部異常",
     filterAbs: "🚨 全天缺勤 (ABS)",
     filterMissed: "⚠️ 漏打卡 (Missed Checkout)",
     filterLate: "遲過 9:00",
     filterEarly: "早過 17:30",
 
-    // 預覽表格標頭
     colDept: "部門代碼",
     colDeptName: "部門名稱",
     colEmpCode: "工號",
@@ -61,7 +56,6 @@ const i18nData = {
     privacyBadge: "Client-Side Offline Engine • Zero Data Leakage Risk",
     langBtn: "繁體中文",
 
-    // Guide Section
     guideTitle: "Instructions & Operational Guide",
     guideIntro: "Developed independently by Jumbo Orient Contracting Limited, this system audits attendance records with automated priority ranking—highlighting Absent (ABS) and Missed Checkout at the top.",
     guideStepTitle: "Operational Steps:",
@@ -79,25 +73,21 @@ const i18nData = {
       "Early Leave: Checked out before 17:30 on weekdays without approved leave."
     ],
 
-    // Upload Zone
     dropTitle: "Click to select or drag attendance Excel file here",
     dropSubtitle: "Supports standard system exported .xls and .xlsx files",
     dropNotice: "Security Assurance: Data is processed strictly within local memory. Zero data is transmitted externally.",
 
-    // Status & Actions
     processing: "Parsing workbook and executing corporate audit rules...",
     complete: "Audit complete! Identified {count} punch anomalies (ABS & Missed Punches pinned to top).",
     downloadBtn: "Download Problem.xlsx Report",
     noData: "Great! No punch anomalies detected.",
 
-    // Fast Filter Tabs
     filterAll: "All Anomalies",
     filterAbs: "🚨 Absence (ABS)",
     filterMissed: "⚠️ Missed Checkout",
     filterLate: "Late > 9:00",
     filterEarly: "Early < 17:30",
 
-    // Table Headers
     colDept: "Dept Code",
     colDeptName: "Dept Name",
     colEmpCode: "Emp Code",
@@ -113,52 +103,55 @@ const i18nData = {
 
 let currentLang = 'zh';
 
+function setSafeText(id, text) {
+  const el = document.getElementById(id);
+  if (el) el.innerText = text;
+}
+
 function setLanguage(lang) {
   currentLang = lang;
   const t = i18nData[lang];
 
-  document.getElementById('ui-title').innerText = t.title;
-  document.getElementById('ui-subtitle').innerText = t.subtitle;
-  document.getElementById('ui-privacy-badge').innerText = t.privacyBadge;
-  document.getElementById('ui-lang-btn').innerText = t.langBtn;
+  setSafeText('ui-title', t.title);
+  setSafeText('ui-subtitle', t.subtitle);
+  setSafeText('ui-privacy-badge', t.privacyBadge);
+  setSafeText('ui-lang-btn', t.langBtn);
 
-  document.getElementById('ui-guide-title').innerText = t.guideTitle;
-  document.getElementById('ui-guide-intro').innerText = t.guideIntro;
-  document.getElementById('ui-guide-step-title').innerText = t.guideStepTitle;
-  document.getElementById('ui-guide-rules-title').innerText = t.guideRulesTitle;
+  setSafeText('ui-guide-title', t.guideTitle);
+  setSafeText('ui-guide-intro', t.guideIntro);
+  setSafeText('ui-guide-step-title', t.guideStepTitle);
+  setSafeText('ui-guide-rules-title', t.guideRulesTitle);
 
   const stepList = document.getElementById('ui-guide-steps');
-  stepList.innerHTML = t.guideSteps.map(s => `<li>${s}</li>`).join('');
+  if (stepList) stepList.innerHTML = t.guideSteps.map(s => `<li>${s}</li>`).join('');
 
   const rulesList = document.getElementById('ui-guide-rules');
-  rulesList.innerHTML = t.guideRules.map(r => `<li>${r}</li>`).join('');
+  if (rulesList) rulesList.innerHTML = t.guideRules.map(r => `<li>${r}</li>`).join('');
 
-  document.getElementById('ui-drop-title').innerText = t.dropTitle;
-  document.getElementById('ui-drop-subtitle').innerText = t.dropSubtitle;
-  document.getElementById('ui-drop-notice').innerText = t.dropNotice;
-  document.getElementById('download-btn').innerText = t.downloadBtn;
+  setSafeText('ui-drop-title', t.dropTitle);
+  setSafeText('ui-drop-subtitle', t.dropSubtitle);
+  setSafeText('ui-drop-notice', t.dropNotice);
+  setSafeText('download-btn', t.downloadBtn);
 
-  // 過濾標籤
-  document.getElementById('tab-all').innerText = t.filterAll;
-  document.getElementById('tab-abs').innerText = t.filterAbs;
-  document.getElementById('tab-missed').innerText = t.filterMissed;
-  document.getElementById('tab-late').innerText = t.filterLate;
-  document.getElementById('tab-early').innerText = t.filterEarly;
+  setSafeText('tab-all', t.filterAll);
+  setSafeText('tab-abs', t.filterAbs);
+  setSafeText('tab-missed', t.filterMissed);
+  setSafeText('tab-late', t.filterLate);
+  setSafeText('tab-early', t.filterEarly);
 
-  // 表格標頭
-  document.getElementById('th-dept').innerText = t.colDept;
-  document.getElementById('th-dept-name').innerText = t.colDeptName;
-  document.getElementById('th-emp').innerText = t.colEmpCode;
-  document.getElementById('th-name').innerText = t.colName;
-  document.getElementById('th-date').innerText = t.colDate;
-  document.getElementById('th-day').innerText = t.colDay;
-  document.getElementById('th-clk').innerText = t.colClocking;
-  document.getElementById('th-in').innerText = t.colIn;
-  document.getElementById('th-out').innerText = t.colOut;
-  document.getElementById('th-reason').innerText = t.colReason;
+  setSafeText('th-dept', t.colDept);
+  setSafeText('th-dept-name', t.colDeptName);
+  setSafeText('th-emp', t.colEmpCode);
+  setSafeText('th-name', t.colName);
+  setSafeText('th-date', t.colDate);
+  setSafeText('th-day', t.colDay);
+  setSafeText('th-clk', t.colClocking);
+  setSafeText('th-in', t.colIn);
+  setSafeText('th-out', t.colOut);
+  setSafeText('th-reason', t.colReason);
 
   if (window.lastProblemCount !== undefined) {
-    document.getElementById('status-text').innerText = t.complete.replace('{count}', window.lastProblemCount);
+    setSafeText('status-text', t.complete.replace('{count}', window.lastProblemCount));
   }
 }
 
