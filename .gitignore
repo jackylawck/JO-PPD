@@ -1,0 +1,16 @@
+# 嚴格禁止任何考勤原檔與報表上傳
+*.xls
+*.xlsx
+*.csv
+
+# Python 快取與環境
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+dist/
+build/
+*.spec
+.DS_Store
