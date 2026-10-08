@@ -1,4 +1,4 @@
-// app.js - Jumbo Orient Punch Problem Detector 核心業務審計引擎
+// app.js - Jumbo Orient Punch Problem Detector 核心業務審計引擎 (Simple & Robust Rules)
 let allProblemRows = [];
 let currentFilter = 'ALL';
 let outputWorkbook = null;
@@ -55,7 +55,7 @@ function processAttendance(wb, filename) {
   const sheet = wb.Sheets[wb.SheetNames[0]];
   const rawData = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: false });
 
-  // 1. 動態識別 Period 檔名與截數截止日 (25號截數)
+  // 1. 動態識別 Period 檔名與截數日 (25號)
   targetFileName = "Problem.xlsx";
   let cutoffLimitDate = null;
   for (let r = 0; r < Math.min(10, rawData.length); r++) {
@@ -117,43 +117,42 @@ function processAttendance(wb, filename) {
 
     const lastClk = Math.max(clk1, clk2, clk3, clk4);
 
-    // ==========================================
-    // 業務審計邏輯 (有打卡者優先歸入漏打卡)
-    // ==========================================
+    // ==============================================================
+    // 簡單清晰業務規則 (Simple Corporate Rules)
+    // ==============================================================
     let anomalyReason = "";
     let category = "";
     let priority = 99;
 
-    // ⚠️ 優先級 1: 漏打收工卡 (有上班打卡，但整天只有單次打卡或無有效收工卡)
-    // 不論系統最後一欄是否記為 ABS，本質都是漏打收工卡！
-    if (clk1 > 0 && (lastClk === clk1 || timeOut === 0 || lastClk < 13.00)) {
-      anomalyReason = reasonRaw === 'ABS' 
-        ? "漏打收工卡 (系統記ABS)" 
-        : "漏打收工卡 (Missed Checkout)";
-      category = "MISSED";
+    // 🚨 規則 1: 缺勤 (ABS) -> 優先級最高
+    if (reasonRaw === 'ABS') {
+      anomalyReason = clk1 > 0 ? "缺勤但有打卡 (ABS with Punch)" : "全天缺勤 (ABS)";
+      category = "ABS";
       priority = 1;
     }
-    // 🚨 優先級 2: 純全天缺勤 (打卡全為 0 且系統記為 ABS)
-    else if (reasonRaw === 'ABS') {
-      anomalyReason = "全天缺勤 (ABS)";
-      category = "ABS";
+    // ⚠️ 規則 2: 真正的漏打收工卡
+    // 判定標準：有上班打卡 (clk1 > 0)，但實質沒有下午/收工時間 (timeOut == 0 且 lastClk < 13.00)
+    // 若 timeOut >= 17.30，代表系統已有有效收工記錄，不算漏打卡！
+    else if (clk1 > 0 && timeOut === 0 && lastClk < 13.00) {
+      anomalyReason = "漏打收工卡 (Missed Checkout)";
+      category = "MISSED";
       priority = 2;
     }
-    // 優先級 3: 特殊任務無實質打卡
+    // 規則 3: 特殊任務無實質打卡 (如 TRAIN/SITE)
     else if (clk1 === 0 && lastClk === 0 && ['TRAIN', 'SITE', 'MEET', 'EVENT', 'OTHER'].includes(reasonRaw)) {
       anomalyReason = `特殊任務無打卡 (${reasonRaw})`;
       category = "MISSED";
       priority = 3;
     }
-    // 優先級 4: 遲到 (遲過 9:00 返工)
+    // 規則 4: 遲過九點返工 (Clk1 > 9:00 AM)
     else if (clk1 > 9.00 && !reasonRaw) {
       anomalyReason = `遲過九點 (Late: ${clk1.toFixed(2)} > 9:00)`;
       category = "LATE";
       priority = 4;
     }
-    // 優先級 5: 早退 (早過 17:30 收工，星期一至五標準日)
-    else if (day !== 'Saturday' && normal >= 7.0 && lastClk > 0 && lastClk < 17.30 && !reasonRaw) {
-      anomalyReason = `早過五點半 (Early: ${lastClk.toFixed(2)} < 17:30)`;
+    // 規則 5: 早過五點半收工 (星期一至五，最後打卡與系統收工皆早於 17:30，且非半日班)
+    else if (day !== 'Saturday' && normal >= 7.0 && lastClk > 0 && lastClk < 17.30 && timeOut < 17.30 && !reasonRaw) {
+      anomalyReason = `早過五點半 (Early: ${Math.max(lastClk, timeOut).toFixed(2)} < 17:30)`;
       category = "EARLY";
       priority = 5;
     }
@@ -171,7 +170,7 @@ function processAttendance(wb, filename) {
     }
   });
 
-  // 排序：漏打卡與 ABS 置頂
+  // 排序：ABS 最前，漏打卡第二，遲到早退在後
   rawProblems.sort((a, b) => a.priority - b.priority);
   allProblemRows = rawProblems;
 
@@ -226,7 +225,7 @@ function renderPreview(rows) {
   rows.forEach(r => {
     const tr = document.createElement('tr');
     
-    // 視覺高亮：ABS 用淺紅，漏打卡用淺黃
+    // 視覺高亮
     let rowClass = "hover:bg-gray-50 transition border-b";
     let badgeClass = "px-2.5 py-1 rounded text-xs font-semibold whitespace-nowrap";
 
