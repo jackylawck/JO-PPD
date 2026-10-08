@@ -2,8 +2,7 @@
 ## Compliance, Data Sovereignty & Tech Governance Whitepaper
 
 **項目名稱 (Project):** Jumbo Orient Punch Problem Detector (JO-PPD / 東淦打卡異常偵測工具)  
-**研發機構 (Organization):** 東淦工程有限公司 (Jumbo Orient Contracting Limited)  
-**系統架構師 (Lead Architect):** 羅子淇 (Jacky Law, F.I.H.R.M., FHKIoD)  
+**系統架構師 (Lead Architect):** 羅子淇 (Jacky Law)  
 **生效日期 (Effective Date):** 2026-10-01  
 **版本 (Version):** 1.0.0 (Production Release)
 
@@ -57,6 +56,6 @@ This system is an enterprise internal audit utility engineered for Jumbo Orient 
 如對本項目之科技架構、數據合規或法規適用性有任何治理諮詢，請聯絡：
 
 * **企業實體:** 東淦工程有限公司 (Jumbo Orient Contracting Limited)
-* **管治顧問 / 架構師:** 羅子淇 (Jacky Law, Senior HR Manager & Corporate Governance Advisor)
+* **管治顧問 / 架構師:** 羅子淇 (Jacky Law)
 * **官方網址:** [https://www.jumboorient.com.hk/](https://www.jumboorient.com.hk/)
 * **開放源碼庫:** [https://github.com/jackylawck/JO-PPD](https://github.com/jackylawck/JO-PPD)
