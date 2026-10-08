@@ -4,35 +4,43 @@ let currentFilter = 'ALL';
 let outputWorkbook = null;
 let targetFileName = "Problem.xlsx";
 
-const fileInput = document.getElementById('file-input');
-const dropArea = document.getElementById('drop-area');
-const statusPanel = document.getElementById('status-panel');
-const statusText = document.getElementById('status-text');
-const previewBody = document.getElementById('preview-body');
-const downloadBtn = document.getElementById('download-btn');
-
 document.addEventListener("DOMContentLoaded", () => {
   if (typeof setLanguage === "function") setLanguage('zh');
-});
 
-// 拖曳與上傳事件監聽
-dropArea.addEventListener('click', () => fileInput.click());
-dropArea.addEventListener('dragover', (e) => { e.preventDefault(); dropArea.classList.add('bg-blue-50/50'); });
-dropArea.addEventListener('dragleave', () => dropArea.classList.remove('bg-blue-50/50'));
-dropArea.addEventListener('drop', (e) => {
-  e.preventDefault();
-  dropArea.classList.remove('bg-blue-50/50');
-  if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
-});
+  const fileInput = document.getElementById('file-input');
+  const dropArea = document.getElementById('drop-area');
+  const downloadBtn = document.getElementById('download-btn');
 
-fileInput.addEventListener('change', (e) => {
-  if (e.target.files.length) handleFile(e.target.files[0]);
+  if (dropArea && fileInput) {
+    dropArea.addEventListener('click', () => fileInput.click());
+    dropArea.addEventListener('dragover', (e) => { e.preventDefault(); dropArea.classList.add('bg-blue-50'); });
+    dropArea.addEventListener('dragleave', () => dropArea.classList.remove('bg-blue-50'));
+    dropArea.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropArea.classList.remove('bg-blue-50');
+      if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+    });
+
+    fileInput.addEventListener('change', (e) => {
+      if (e.target.files.length) handleFile(e.target.files[0]);
+    });
+  }
+
+  if (downloadBtn) {
+    downloadBtn.addEventListener('click', () => {
+      if (!outputWorkbook) return;
+      XLSX.writeFile(outputWorkbook, targetFileName);
+    });
+  }
 });
 
 function handleFile(file) {
   if (!file) return;
-  statusPanel.classList.remove('hidden');
-  statusText.innerText = i18nData[currentLang].processing;
+  const statusPanel = document.getElementById('status-panel');
+  const statusText = document.getElementById('status-text');
+
+  if (statusPanel) statusPanel.classList.remove('hidden');
+  if (statusText) statusText.innerText = i18nData[currentLang].processing;
 
   const reader = new FileReader();
   reader.onload = function(e) {
@@ -47,7 +55,7 @@ function processAttendance(wb, filename) {
   const sheet = wb.Sheets[wb.SheetNames[0]];
   const rawData = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: false });
 
-  // 1. 動態識別 Period 檔名與截數截止日 (25號截數)
+  // 1. 動態識別 Period 檔名與截數日 (25號)
   targetFileName = "Problem.xlsx";
   let cutoffLimitDate = null;
   for (let r = 0; r < Math.min(10, rawData.length); r++) {
@@ -86,7 +94,7 @@ function processAttendance(wb, filename) {
     const name = String(r[3] || '').trim();
     const desig = String(r[4] || '').trim();
     
-    // 僅審計 E 職員與 9 個目標業務部門
+    // 僅審計 E 職員與目標業務部門
     if (!empCode.startsWith('E') || !targetDepts.includes(dept)) return;
 
     const dateStr = String(r[5] || '').trim();
@@ -109,14 +117,12 @@ function processAttendance(wb, filename) {
 
     const lastClk = Math.max(clk1, clk2, clk3, clk4);
 
-    // ==========================================
-    // 業務審計邏輯 (賦予優先級與 Highlight 分類)
-    // ==========================================
+    // 業務審計判定與優先級
     let anomalyReason = "";
     let category = "";
-    let priority = 99; // 越小越排前
+    let priority = 99;
 
-    // 🚨 優先級 1: 全天缺勤 (ABS) -> 置頂
+    // 🚨 優先級 1: 全天缺勤 (ABS)
     if (reasonRaw === 'ABS') {
       anomalyReason = clk1 > 0 ? "缺勤但有打卡 (ABS with Punch)" : "全天缺勤 (ABS)";
       category = "ABS";
@@ -160,12 +166,15 @@ function processAttendance(wb, filename) {
     }
   });
 
-  // 依重要性優先級排序 (ABS 最先，漏打卡次之，遲到/早退在後)
+  // 排序：ABS 最前，漏打卡第二
   rawProblems.sort((a, b) => a.priority - b.priority);
   allProblemRows = rawProblems;
 
   window.lastProblemCount = allProblemRows.length;
-  statusText.innerText = i18nData[currentLang].complete.replace('{count}', allProblemRows.length);
+  const statusText = document.getElementById('status-text');
+  if (statusText) {
+    statusText.innerText = i18nData[currentLang].complete.replace('{count}', allProblemRows.length);
+  }
 
   applyFilter('ALL');
   buildOutputExcel(allProblemRows);
@@ -174,8 +183,8 @@ function processAttendance(wb, filename) {
 function applyFilter(filterKey) {
   currentFilter = filterKey;
   document.querySelectorAll('.filter-tab').forEach(tab => {
-    tab.classList.remove('bg-slate-900', 'text-white');
-    tab.classList.add('bg-slate-100', 'text-slate-700');
+    tab.classList.remove('bg-gray-900', 'text-white');
+    tab.classList.add('bg-gray-100', 'text-gray-700');
   });
 
   const activeTabMap = {
@@ -188,8 +197,8 @@ function applyFilter(filterKey) {
 
   const activeTab = document.getElementById(activeTabMap[filterKey]);
   if (activeTab) {
-    activeTab.classList.remove('bg-slate-100', 'text-slate-700');
-    activeTab.classList.add('bg-slate-900', 'text-white');
+    activeTab.classList.remove('bg-gray-100', 'text-gray-700');
+    activeTab.classList.add('bg-gray-900', 'text-white');
   }
 
   const filtered = filterKey === 'ALL' 
@@ -200,25 +209,27 @@ function applyFilter(filterKey) {
 }
 
 function renderPreview(rows) {
+  const previewBody = document.getElementById('preview-body');
+  if (!previewBody) return;
+
   previewBody.innerHTML = '';
   if (rows.length === 0) {
-    previewBody.innerHTML = `<tr><td colspan="10" class="p-6 text-center text-slate-400">${i18nData[currentLang].noData}</td></tr>`;
+    previewBody.innerHTML = `<tr><td colspan="10" class="p-6 text-center text-gray-400">${i18nData[currentLang].noData}</td></tr>`;
     return;
   }
 
   rows.forEach(r => {
     const tr = document.createElement('tr');
     
-    // 視覺等級高亮：缺勤用淡紅，漏打卡用淡黃
-    let rowClass = "hover:bg-slate-50 transition border-b";
-    let badgeClass = "px-2 py-0.5 rounded text-[11px] font-semibold";
+    let rowClass = "hover:bg-gray-50 transition border-b";
+    let badgeClass = "px-2 py-0.5 rounded text-xs font-semibold";
 
     if (r.category === 'ABS') {
-      rowClass = "bg-rose-50/60 hover:bg-rose-50 transition border-b border-rose-100";
-      badgeClass += " bg-rose-100 text-rose-800 border border-rose-300 font-bold";
+      rowClass = "bg-red-50 hover:bg-red-100 transition border-b border-red-100";
+      badgeClass += " bg-red-100 text-red-800 border border-red-300 font-bold";
     } else if (r.category === 'MISSED') {
-      rowClass = "bg-amber-50/40 hover:bg-amber-50 transition border-b border-amber-100";
-      badgeClass += " bg-amber-100 text-amber-800 border border-amber-300 font-bold";
+      rowClass = "bg-yellow-50 hover:bg-yellow-100 transition border-b border-yellow-100";
+      badgeClass += " bg-yellow-100 text-yellow-800 border border-yellow-300 font-bold";
     } else if (r.category === 'LATE') {
       badgeClass += " bg-blue-50 text-blue-700 border border-blue-200";
     } else {
@@ -228,14 +239,14 @@ function renderPreview(rows) {
     tr.className = rowClass;
     tr.innerHTML = `
       <td class="px-3 py-2 font-mono font-medium">${r.dept}</td>
-      <td class="px-3 py-2 text-slate-600">${r.deptName}</td>
-      <td class="px-3 py-2 font-mono font-bold text-slate-800">${r.empCode}</td>
-      <td class="px-3 py-2 font-medium text-slate-900">${r.name}</td>
+      <td class="px-3 py-2 text-gray-600">${r.deptName}</td>
+      <td class="px-3 py-2 font-mono font-bold text-gray-800">${r.empCode}</td>
+      <td class="px-3 py-2 font-medium text-gray-900">${r.name}</td>
       <td class="px-3 py-2">${r.date}</td>
       <td class="px-3 py-2">${r.day}</td>
-      <td class="px-3 py-2 font-mono text-slate-500">${r.clk1} / ${r.clk2} / ${r.clk3} / ${r.clk4}</td>
-      <td class="px-3 py-2 font-mono font-bold text-slate-700">${r.timeIn.toFixed(2)}</td>
-      <td class="px-3 py-2 font-mono font-bold text-slate-700">${r.timeOut.toFixed(2)}</td>
+      <td class="px-3 py-2 font-mono text-gray-500">${r.clk1} / ${r.clk2} / ${r.clk3} / ${r.clk4}</td>
+      <td class="px-3 py-2 font-mono font-bold text-gray-700">${r.timeIn.toFixed(2)}</td>
+      <td class="px-3 py-2 font-mono font-bold text-gray-700">${r.timeOut.toFixed(2)}</td>
       <td class="px-3 py-2"><span class="${badgeClass}">${r.reason}</span></td>
     `;
     previewBody.appendChild(tr);
@@ -263,8 +274,3 @@ function buildOutputExcel(rows) {
   outputWorkbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(outputWorkbook, ws, "Problem.Log");
 }
-
-downloadBtn.addEventListener('click', () => {
-  if (!outputWorkbook) return;
-  XLSX.writeFile(outputWorkbook, targetFileName);
-});
