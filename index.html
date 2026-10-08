@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="zh-HK" prefix="og: https://ogp.me/ns#">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no, viewport-fit=cover">
+  
+  <!-- 🔍 Google Search Console 擁有權驗證 -->
+  <meta name="google-site-verification" content="JZ5UohX-CcP_fQV0_DI9VadkKY4ZoTTkUifL88-fIcY">
+
+  <!-- 🏢 基礎 SEO 核心標籤：東淦工程創科項目 -->
+  <title>Jumbo Orient Punch Problem Detector 東淦打卡異常偵測工具 | 東淦工程有限公司 (Jumbo Orient Contracting Limited)</title>
+  <meta name="description" content="Jumbo Orient Punch Problem Detector (東淦打卡異常偵測工具 / JO-PPD) 是東淦工程有限公司（Jumbo Orient Contracting Limited）自主研發之企業級無伺服器考勤完整性審計引擎。落實純前端零數據外洩架構，自動化解析複雜打卡紀錄並秒級生成標準化 Problem Log 稽核日誌。">
+  <meta name="keywords" content="東淦工程, 東淦工程有限公司, Jumbo Orient, Jumbo Orient Contracting Limited, JO-PPD, 打卡異常偵測工具, 考勤審計, 考勤完整性, 數位轉型, 智慧建造, 人力資源科技, HR Tech, SheetJS, 純前端運算, 數據隱私保護, 企業管治">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://jackylawck.github.io/JO-PPD/">
+
+  <!-- 👤 作者資訊 -->
+  <meta name="author" content="羅子淇 (Jacky Law)">
+  <meta property="article:author" content="羅子淇 (Jacky Law)">
+
+  <!-- 🌐 Open Graph / LinkedIn / Facebook 社交預覽卡片 -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://jackylawck.github.io/JO-PPD/">
+  <meta property="og:title" content="Jumbo Orient Punch Problem Detector 東淦打卡異常偵測工具 | 東淦工程創科項目">
+  <meta property="og:description" content="零伺服器傳輸、極致數據安全。東淦工程自主構建之純前端考勤異常審計工作站，以高精度規則自動偵測脫節打卡與考勤矛盾，引領營造業人力資源數位轉型。">
+  <meta property="og:image" content="https://www.jumboorient.com.hk/assets/jumbo-orient-og-banner.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="東淦打卡異常偵測工具 JO-PPD 系統全景架構圖">
+  <meta property="og:locale" content="zh_HK">
+  <meta property="og:site_name" content="東淦工程有限公司 Jumbo Orient Contracting Limited">
+
+  <!-- 🐦 Twitter / X Cards -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="JO-PPD: 東淦打卡異常偵測工具 | 東淦工程有限公司">
+  <meta name="twitter:description" content="純前端離線解析之考勤打卡異常審計系統，保障企業人事數據私隱，落實高標準企業治理。">
+  <meta name="twitter:image" content="https://www.jumboorient.com.hk/assets/jumbo-orient-og-banner.png">
+
+  <!-- 📱 PWA 與行動端適配 -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="東淦JO-PPD">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#0b192c">
+  <meta name="application-name" content="JO-PPD 東淦打卡異常偵測工具">
+
+  <!-- 🛡️ 企業級資安防禦策略：CSP 阻斷外部未授權連線 -->
+  <meta http-equiv="Content-Security-Policy" content="
+    default-src 'self';
+    script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdn.jsdelivr.net;
+    style-src 'self' 'unsafe-inline';
+    img-src 'self' data: https://img.shields.io https://www.jumboorient.com.hk;
+    font-src 'self' data:;
+    connect-src 'self';
+    media-src 'none';
+    object-src 'none';
+    base-uri 'self';
+    form-action 'none';
+    frame-ancestors 'none';
+  ">
+  <meta http-equiv="Permissions-Policy" content="accelerometer=(), gyroscope=(), microphone=(), camera=(), geolocation=(), payment=()">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+
+  <!-- 🏷️ Schema.org 結構化資料 (企業法人 + 作者 Person + 應用軟體精準關聯) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Corporation",
+        "@id": "https://www.jumboorient.com.hk/#organization",
+        "name": "東淦工程有限公司",
+        "alternateName": "Jumbo Orient Contracting Limited",
+        "url": "https://www.jumboorient.com.hk/",
+        "logo": "https://www.jumboorient.com.hk/assets/logo.png",
+        "description": "東淦工程有限公司專注於高標準工程營造與營建工程服務，致力於推動智慧建造技術、數位轉型與企業高標準誠信管治。",
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "Hong Kong",
+          "addressCountry": "HK"
+        }
+      },
+      {
+        "@type": "Person",
+        "@id": "https://github.com/jackylawck/#author",
+        "name": "羅子淇 (Jacky Law)",
+        "jobTitle": "Senior HR Manager & Corporate Governance Advisor",
+        "worksFor": {
+          "@id": "https://www.jumboorient.com.hk/#organization"
+        },
+        "url": "https://github.com/jackylawck"
+      },
+      {
+        "@type": "SoftwareApplication",
+        "@id": "https://jackylawck.github.io/JO-PPD/#software",
+        "name": "Jumbo Orient Punch Problem Detector",
+        "alternateName": "東淦打卡異常偵測工具 (JO-PPD)",
+        "applicationCategory": "BusinessApplication",
+        "operatingSystem": "Web Browser",
+        "author": {
+          "@id": "https://github.com/jackylawck/#author"
+        },
+        "publisher": {
+          "@id": "https://www.jumboorient.com.hk/#organization"
+        },
+        "description": "企業級純前端考勤完整性與打卡異常自動化審計系統，透過高精度判定規則自動識別缺勤矛盾、打卡脫節與漏簽異常，保障數據私隱與零外洩風險。"
+      }
+    ]
+  }
+  </script>
+
+  <!-- 外部依賴 CDN (Tailwind CSS, SheetJS, 本地雙語字典) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="i18n.js"></script>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen py-8 px-4 font-sans">
+  <div class="max-w-5xl mx-auto space-y-6">
+    
+    <!-- 頂部標題與語系切換 -->
+    <header class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div>
+        <div class="flex flex-wrap items-center gap-3">
+          <h1 id="ui-title" class="text-2xl font-bold text-slate-900 tracking-tight">東淦打卡異常偵測工具</h1>
+          <span id="ui-privacy-badge" class="bg-emerald-50 text-emerald-700 text-xs px-2.5 py-1 rounded-full border border-emerald-200 font-medium">
+            純前端離線解析・零數據外流風險
+          </span>
+        </div>
+        <p id="ui-subtitle" class="text-sm text-slate-500 mt-1">Jumbo Orient Punch Problem Detector (JO-PPD)</p>
+      </div>
+      <button onclick="toggleLanguage()" id="ui-lang-btn" class="self-start md:self-auto bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold px-3 py-2 rounded-lg border border-slate-300 transition">
+        English
+      </button>
+    </header>
+
+    <!-- 說明與指引 (摺疊面板，預設展開) -->
+    <details open class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 group">
+      <summary class="cursor-pointer font-semibold text-slate-800 flex justify-between items-center select-none">
+        <span id="ui-guide-title" class="text-base font-bold text-slate-900 flex items-center gap-2">
+          📖 系統說明與操作指引
+        </span>
+        <span class="text-xs text-slate-400 group-open:rotate-180 transition-transform">▼</span>
+      </summary>
+      <div class="mt-4 pt-4 border-t border-slate-100 text-sm text-slate-600 space-y-4">
+        <p id="ui-guide-intro" class="leading-relaxed"></p>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-50 p-4 rounded-lg border border-slate-200">
+          <div>
+            <h4 id="ui-guide-step-title" class="font-bold text-slate-800 mb-2"></h4>
+            <ol id="ui-guide-steps" class="list-decimal list-inside space-y-1.5 text-xs text-slate-600 leading-relaxed"></ol>
+          </div>
+          <div>
+            <h4 id="ui-guide-rules-title" class="font-bold text-slate-800 mb-2"></h4>
+            <ul id="ui-guide-rules" class="list-disc list-inside space-y-1.5 text-xs text-slate-600 leading-relaxed"></ul>
+          </div>
+        </div>
+      </div>
+    </details>
+
+    <!-- 檔案上傳區塊 -->
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-8">
+      <div id="drop-area" class="border-2 border-dashed border-slate-300 hover:border-blue-400 rounded-xl p-10 text-center cursor-pointer hover:bg-blue-50/30 transition">
+        <input type="file" id="file-input" accept=".xls,.xlsx" class="hidden">
+        <svg class="mx-auto h-12 w-12 text-slate-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+        </svg>
+        <h3 id="ui-drop-title" class="text-base font-bold text-slate-800"></h3>
+        <p id="ui-drop-subtitle" class="text-xs text-slate-500 mt-1"></p>
+        <p id="ui-drop-notice" class="text-[11px] text-emerald-600 font-medium mt-3"></p>
+      </div>
+
+      <!-- 解析結果面板 -->
+      <div id="status-panel" class="mt-6 hidden space-y-4">
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
+          <div class="flex items-center gap-2">
+            <span class="inline-block w-2.5 h-2.5 bg-emerald-500 rounded-full animate-pulse"></span>
+            <span id="status-text" class="text-sm font-semibold text-slate-800"></span>
+          </div>
+          <button id="download-btn" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-5 py-2.5 rounded-lg shadow-sm transition">
+            下載 Problem.xlsx 報表
+          </button>
+        </div>
+
+        <!-- 即時預覽表格 -->
+        <div class="border border-slate-200 rounded-lg overflow-hidden max-h-96 overflow-y-auto">
+          <table class="w-full text-xs text-left divide-y divide-slate-200">
+            <thead class="bg-slate-50 text-slate-700 font-bold sticky top-0">
+              <tr>
+                <th id="th-dept" class="px-3 py-2.5">部門代碼</th>
+                <th id="th-dept-name" class="px-3 py-2.5">部門名稱</th>
+                <th id="th-emp" class="px-3 py-2.5">工號</th>
+                <th id="th-name" class="px-3 py-2.5">姓名</th>
+                <th id="th-date" class="px-3 py-2.5">日期</th>
+                <th id="th-day" class="px-3 py-2.5">星期</th>
+                <th id="th-clk" class="px-3 py-2.5">原始打卡 (Clk1-4)</th>
+                <th id="th-in" class="px-3 py-2.5">Time IN</th>
+                <th id="th-out" class="px-3 py-2.5">Time OUT</th>
+              </tr>
+            </thead>
+            <tbody id="preview-body" class="divide-y divide-slate-100 bg-white"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 初始化雙語介面
+    document.addEventListener("DOMContentLoaded", () => setLanguage('zh'));
+
+    const fileInput = document.getElementById('file-input');
+    const dropArea = document.getElementById('drop-area');
+    const statusPanel = document.getElementById('status-panel');
+    const statusText = document.getElementById('status-text');
+    const previewBody = document.getElementById('preview-body');
+    const downloadBtn = document.getElementById('download-btn');
+
+    let outputWorkbook = null;
+    let targetFileName = "Problem.xlsx";
+
+    dropArea.addEventListener('click', () => fileInput.click());
+    dropArea.addEventListener('dragover', (e) => { e.preventDefault(); dropArea.classList.add('bg-blue-50/50'); });
+    dropArea.addEventListener('dragleave', () => dropArea.classList.remove('bg-blue-50/50'));
+    dropArea.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropArea.classList.remove('bg-blue-50/50');
+      if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+    });
+
+    fileInput.addEventListener('change', (e) => {
+      if (e.target.files.length) handleFile(e.target.files[0]);
+    });
+
+    function handleFile(file) {
+      if (!file) return;
+      statusPanel.classList.remove('hidden');
+      statusText.innerText = i18nData[currentLang].processing;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        processAttendance(workbook, file.name);
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    function processAttendance(wb, filename) {
+      const sheet = wb.Sheets[wb.SheetNames[0]];
+      const rawData = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: false });
+
+      // 1. 動態識別 Period 檔名與截數截止日
+      targetFileName = "Problem.xlsx";
+      let cutoffLimitDate = null;
+      for (let r = 0; r < Math.min(10, rawData.length); r++) {
+        const line = (rawData[r] || []).join(" ");
+        const match = line.match(/Period\s*:\s*:?\s*(\d{1,2})[-/](\d{1,2})[-/](\d{4})\s*To\s*(\d{1,2})[-/](\d{1,2})[-/](\d{4})/i);
+        if (match) {
+          const [, d1, m1, y1, d2, m2, y2] = match;
+          targetFileName = `${parseInt(d1)}-${parseInt(d2)}.${parseInt(m2)}.${y2}.Problem.xlsx`;
+          cutoffLimitDate = new Date(parseInt(y2), parseInt(m2) - 1, 25);
+          break;
+        }
+      }
+
+      // 2. 定位表頭行
+      let headerRow = -1;
+      for (let i = 0; i < Math.min(15, rawData.length); i++) {
+        if (rawData[i] && rawData[i].some(cell => String(cell).includes("Department Code"))) {
+          headerRow = i;
+          break;
+        }
+      }
+
+      if (headerRow === -1) {
+        alert(currentLang === 'zh' ? "無法找到 'Department Code' 表頭！" : "Cannot find 'Department Code' header!");
+        return;
+      }
+
+      const rows = rawData.slice(headerRow + 2);
+      const targetDepts = ['PCD', 'HOF', 'PMD', 'POD', 'QSD', 'WMD', 'ADD', 'CPD', 'SED'];
+      const problemRows = [];
+
+      rows.forEach(r => {
+        const dept = String(r[0] || '').trim().toUpperCase();
+        const deptName = String(r[1] || '').trim();
+        const empCode = String(r[2] || '').trim().toUpperCase();
+        const name = String(r[3] || '').trim();
+        const desig = String(r[4] || '').trim();
+        
+        // 僅審計 E 職員與 9 個目標業務部門
+        if (!empCode.startsWith('E') || !targetDepts.includes(dept)) return;
+
+        const dateStr = String(r[5] || '').trim();
+        const rowDate = new Date(dateStr);
+        if (cutoffLimitDate && !isNaN(rowDate) && rowDate > cutoffLimitDate) return;
+
+        const day = String(r[6] || '').trim();
+        const clk1 = parseFloat(r[7]) || 0;
+        const clk2 = parseFloat(r[8]) || 0;
+        const clk3 = parseFloat(r[9]) || 0;
+        const clk4 = parseFloat(r[10]) || 0;
+        const timeIn = parseFloat(r[11]) || 0;
+        const timeOut = parseFloat(r[12]) || 0;
+        const shift = String(r[13] || '').trim().toUpperCase();
+        const late = parseFloat(r[15]) || 0;
+        const earlyOut = parseFloat(r[16]) || 0;
+        const actual = parseFloat(r[17]) || 0;
+        const reason = String(r[23] || '').trim().toUpperCase();
+
+        const lastClk = Math.max(clk1, clk2, clk3, clk4);
+
+        // 審計規則過濾
+        let isProblem = false;
+
+        // 規則 1: 矛盾缺勤 (有打卡記錄卻記 ABS)
+        if (reason === 'ABS' && clk1 > 0) isProblem = true;
+        // 規則 2: 漏打下班卡 (上班有卡但離場為 0)
+        else if (clk1 > 0 && lastClk === clk1 && timeOut === 0 && shift !== 'REST') isProblem = true;
+        // 規則 3: 外勤/特殊任務無實質打卡 (TRAIN/SITE/MEET/EVENT/OTHER)
+        else if (clk1 === 0 && lastClk === 0 && ['TRAIN', 'SITE', 'MEET', 'EVENT', 'OTHER'].includes(reason)) isProblem = true;
+        // 規則 4: 進出打卡實質脫節 >= 30 分鐘
+        else if ((clk1 > 0 && timeIn > 0 && Math.abs(clk1 - timeIn) >= 0.5) || (lastClk > 0 && timeOut > 0 && Math.abs(lastClk - timeOut) >= 0.5 && !reason)) isProblem = true;
+        // 規則 5: 無假條工時嚴重流失 (早退 + 遲到 >= 1.5 小時)
+        else if ((late + earlyOut >= 1.5) && !reason && shift !== 'REST') isProblem = true;
+
+        if (isProblem) {
+          problemRows.push({
+            dept, deptName, empCode, name, desig,
+            date: dateStr, day, clk1, clk2, clk3, clk4,
+            timeIn: (clk1 === 0 && lastClk === 0) ? 0 : timeIn,
+            timeOut: (clk1 === 0 && lastClk === 0) ? 0 : timeOut
+          });
+        }
+      });
+
+      window.lastProblemCount = problemRows.length;
+      statusText.innerText = i18nData[currentLang].complete.replace('{count}', problemRows.length);
+
+      renderPreview(problemRows);
+      buildOutputExcel(problemRows);
+    }
+
+    function renderPreview(rows) {
+      previewBody.innerHTML = '';
+      if (rows.length === 0) {
+        previewBody.innerHTML = `<tr><td colspan="9" class="p-4 text-center text-slate-400">${i18nData[currentLang].noData}</td></tr>`;
+        return;
+      }
+      rows.forEach(r => {
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50 transition";
+        tr.innerHTML = `
+          <td class="px-3 py-2 border-b font-mono font-medium">${r.dept}</td>
+          <td class="px-3 py-2 border-b text-slate-600">${r.deptName}</td>
+          <td class="px-3 py-2 border-b font-mono font-bold text-slate-800">${r.empCode}</td>
+          <td class="px-3 py-2 border-b font-medium text-slate-900">${r.name}</td>
+          <td class="px-3 py-2 border-b">${r.date}</td>
+          <td class="px-3 py-2 border-b">${r.day}</td>
+          <td class="px-3 py-2 border-b font-mono text-slate-500">${r.clk1} / ${r.clk2} / ${r.clk3} / ${r.clk4}</td>
+          <td class="px-3 py-2 border-b font-mono font-bold text-slate-700">${r.timeIn.toFixed(2)}</td>
+          <td class="px-3 py-2 border-b font-mono font-bold text-slate-700">${r.timeOut.toFixed(2)}</td>
+        `;
+        previewBody.appendChild(tr);
+      });
+    }
+
+    function buildOutputExcel(rows) {
+      const header1 = ['Department Code', 'Department Name', 'Emp Code', 'Name', 'Designation', 'Date', 'Day', 'Actual Clocking', '', '', '', 'Time', ''];
+      const header2 = ['', '', '', '', '', '', '', '', '', '', '', 'IN', 'OUT'];
+      const aoa = [header1, header2];
+
+      rows.forEach(r => {
+        aoa.push([
+          r.dept, r.deptName, r.empCode, r.name, r.desig,
+          r.date, r.day, r.clk1, r.clk2, r.clk3, r.clk4, r.timeIn, r.timeOut
+        ]);
+      });
+
+      const ws = XLSX.utils.aoa_to_sheet(aoa);
+      ws['!merges'] = [
+        { s: { r: 0, c: 7 }, e: { r: 0, c: 10 } },
+        { s: { r: 0, c: 11 }, e: { r: 0, c: 12 } }
+      ];
+
+      outputWorkbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(outputWorkbook, ws, "Problem.Log");
+    }
+
+    downloadBtn.addEventListener('click', () => {
+      if (!outputWorkbook) return;
+      XLSX.writeFile(outputWorkbook, targetFileName);
+    });
+  </script>
+</body>
+</html>
