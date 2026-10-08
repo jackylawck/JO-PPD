@@ -8,22 +8,20 @@ const i18nData = {
 
     // 指引與說明區塊
     guideTitle: "系統說明與操作指引",
-    guideIntro: "本工具為東淦工程有限公司（Jumbo Orient Contracting Limited）自主研發之考勤完整性審計引擎。專門用於每月審計考勤原始記錄（Attendance Record），在瀏覽器本地記憶體內自動識別未閉環、漏打卡、打卡脫節等異常，秒級產出標準化 Problem Log 報表。",
+    guideIntro: "本工具為東淦工程有限公司（Jumbo Orient Contracting Limited）自主研發之考勤異常快篩引擎。系統自動將「全天缺勤 (ABS)」與「漏打收工卡」列為最高優先級置頂高亮，並提供一鍵分類過濾。",
     guideStepTitle: "操作步驟：",
     guideSteps: [
       "從考勤系統導出月度考勤原始報表（.xls 或 .xlsx 格式）。",
-      "將檔案拖曳至下方上傳區，系統即刻在瀏覽器本地執行向量化審計。",
-      "檢視異常數據預覽表格，點擊「下載 Problem.xlsx 報表」匯出標準化日誌。"
+      "將檔案拖曳至下方上傳區，系統即刻在瀏覽器本地秒級完成審計。",
+      "系統預設將「缺勤」與「漏打卡」置頂顯示，亦可點擊上方標籤快速切換分類，點擊按鈕匯出標準 Problem.xlsx 報表。"
     ],
-    guideRulesTitle: "核心審計邏輯：",
+    guideRulesTitle: "公司業務審計基準：",
     guideRules: [
-      "審計範圍：嚴格審計月薪職員（E 開頭工號），自動排除地盤工友（W 開頭工號）。",
-      "週期截數：自動套用每月 25 號截數日，避免跨期未平帳數據干擾。",
-      "缺勤衝突：實際有打卡紀錄（Clk > 0）卻被系統標記為缺勤（ABS）。",
-      "漏打下班：上班有打卡但下班無卡且離場時間為 0（Time Out = 0）。",
-      "外勤真空：特殊狀態標記（如 TRAIN / SITE）但實際打卡完全空白。",
-      "打卡脫節：打卡時間與系統認可進出場時間脫節大於等於 30 分鐘。",
-      "工時流失：無請假登記下，早退與遲到累計工時損失大於等於 1.5 小時。"
+      "🚨 最高優先：全天缺勤（系統記為 ABS）或有打卡卻被標記為 ABS。",
+      "⚠️ 次高優先：漏打卡（上班有打卡，但無收工打卡記錄）。",
+      "外勤無打卡：標記為 TRAIN / SITE / MEET 等特殊任務但全日打卡空白。",
+      "遲到判定：首度上班打卡遲過 9:00（Clk1 > 9.00）。",
+      "早退判定：星期一至五，收工打卡早過 17:30（Last_Clk < 17.30 且非半日假）。"
     ],
 
     // 上傳區域
@@ -32,10 +30,17 @@ const i18nData = {
     dropNotice: "資安承諾：所有數據運算均在您的本機瀏覽器內完成，絕不傳輸至任何外部伺服器。",
 
     // 狀態與按鈕
-    processing: "正在解析檔案並執行本地完整性審計...",
-    complete: "審計完成！共篩選出 {count} 筆打卡異常記錄。",
+    processing: "正在解析檔案並執行本地業務規則審計...",
+    complete: "審計完成！共篩選出 {count} 筆打卡異常記錄（缺勤與漏打卡已置頂）。",
     downloadBtn: "下載 Problem.xlsx 報表",
-    noData: "未偵測到符合條件的異常打卡記錄。",
+    noData: "太棒了！未偵測到任何異常打卡記錄。",
+
+    // 快速過濾標籤
+    filterAll: "全部異常",
+    filterAbs: "🚨 全天缺勤 (ABS)",
+    filterMissed: "⚠️ 漏打卡 (Missed Checkout)",
+    filterLate: "遲過 9:00",
+    filterEarly: "早過 17:30",
 
     // 預覽表格標頭
     colDept: "部門代碼",
@@ -46,7 +51,8 @@ const i18nData = {
     colDay: "星期",
     colClocking: "原始打卡 (Clk1-4)",
     colIn: "Time IN",
-    colOut: "Time OUT"
+    colOut: "Time OUT",
+    colReason: "異常原因 (Reason)"
   },
 
   en: {
@@ -57,22 +63,20 @@ const i18nData = {
 
     // Guide Section
     guideTitle: "Instructions & Operational Guide",
-    guideIntro: "Developed independently by Jumbo Orient Contracting Limited, this system is an enterprise-grade punch integrity audit engine. It inspects raw monthly attendance records directly within browser memory, identifying unclosed punches and roster discrepancies to export standardized Problem Log workbooks instantly.",
+    guideIntro: "Developed independently by Jumbo Orient Contracting Limited, this system audits attendance records with automated priority ranking—highlighting Absent (ABS) and Missed Checkout at the top.",
     guideStepTitle: "Operational Steps:",
     guideSteps: [
       "Export the monthly raw attendance file (.xls or .xlsx) from the attendance software.",
       "Drag and drop the file into the upload zone below for instant local evaluation.",
-      "Review the parsed anomalies and click 'Download Problem.xlsx' to save the report."
+      "Severe anomalies (ABS and Missed Checkout) are highlighted at the top. Use category tabs to filter or click Download to save the Problem.xlsx report."
     ],
-    guideRulesTitle: "Core Audit Logic:",
+    guideRulesTitle: "Corporate Audit Benchmarks:",
     guideRules: [
-      "Staff Scope: Strictly audits salaried staff (E-code), excluding site workers (W-code).",
-      "Cut-off Cycle: Enforces the 25th cut-off cycle to prevent cross-period spillover.",
-      "Conflict Absence: Punch recorded (Clk > 0) but status marked as ABS.",
-      "Missed Checkout: Valid check-in punch but no check-out punch (Time Out = 0).",
-      "Unpunched Duty: Official duty marked (e.g. TRAIN / SITE) but punches are completely blank.",
-      "Time Discrepancy: Discrepancy between actual punch and system record >= 30 mins.",
-      "Severe Lost Time: Unapproved cumulative early leave or lateness >= 1.5 hours."
+      "🚨 High Priority: Absence (marked as ABS) or punch recorded but marked as ABS.",
+      "⚠️ High Priority: Missed Checkout (checked in but missing checkout punch).",
+      "Unpunched Duty: Official duties (TRAIN / SITE / MEET) with zero punches.",
+      "Late Check-in: First check-in punch after 09:00 AM (Clk1 > 9.00).",
+      "Early Leave: Checked out before 17:30 on weekdays without approved leave."
     ],
 
     // Upload Zone
@@ -81,10 +85,17 @@ const i18nData = {
     dropNotice: "Security Assurance: Data is processed strictly within local memory. Zero data is transmitted externally.",
 
     // Status & Actions
-    processing: "Parsing workbook and executing local audit rules...",
-    complete: "Audit complete! Identified {count} punch anomaly records.",
+    processing: "Parsing workbook and executing corporate audit rules...",
+    complete: "Audit complete! Identified {count} punch anomalies (ABS & Missed Punches pinned to top).",
     downloadBtn: "Download Problem.xlsx Report",
-    noData: "No punch anomalies detected.",
+    noData: "Great! No punch anomalies detected.",
+
+    // Fast Filter Tabs
+    filterAll: "All Anomalies",
+    filterAbs: "🚨 Absence (ABS)",
+    filterMissed: "⚠️ Missed Checkout",
+    filterLate: "Late > 9:00",
+    filterEarly: "Early < 17:30",
 
     // Table Headers
     colDept: "Dept Code",
@@ -95,7 +106,8 @@ const i18nData = {
     colDay: "Day",
     colClocking: "Actual Clocking (Clk1-4)",
     colIn: "Time IN",
-    colOut: "Time OUT"
+    colOut: "Time OUT",
+    colReason: "Reason"
   }
 };
 
@@ -126,6 +138,14 @@ function setLanguage(lang) {
   document.getElementById('ui-drop-notice').innerText = t.dropNotice;
   document.getElementById('download-btn').innerText = t.downloadBtn;
 
+  // 過濾標籤
+  document.getElementById('tab-all').innerText = t.filterAll;
+  document.getElementById('tab-abs').innerText = t.filterAbs;
+  document.getElementById('tab-missed').innerText = t.filterMissed;
+  document.getElementById('tab-late').innerText = t.filterLate;
+  document.getElementById('tab-early').innerText = t.filterEarly;
+
+  // 表格標頭
   document.getElementById('th-dept').innerText = t.colDept;
   document.getElementById('th-dept-name').innerText = t.colDeptName;
   document.getElementById('th-emp').innerText = t.colEmpCode;
@@ -135,6 +155,7 @@ function setLanguage(lang) {
   document.getElementById('th-clk').innerText = t.colClocking;
   document.getElementById('th-in').innerText = t.colIn;
   document.getElementById('th-out').innerText = t.colOut;
+  document.getElementById('th-reason').innerText = t.colReason;
 
   if (window.lastProblemCount !== undefined) {
     document.getElementById('status-text').innerText = t.complete.replace('{count}', window.lastProblemCount);
