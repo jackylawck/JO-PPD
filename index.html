@@ -61,7 +61,7 @@
   <meta http-equiv="Permissions-Policy" content="accelerometer=(), gyroscope=(), microphone=(), camera=(), geolocation=(), payment=()">
   <meta name="referrer" content="strict-origin-when-cross-origin">
 
-  <!-- 🏷️ Schema.org 結構化資料 (企業法人 + 作者 Person + 應用軟體精準關聯) -->
+  <!-- 🏷️ Schema.org 結構化資料 -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -109,13 +109,13 @@
   }
   </script>
 
-  <!-- 外部依賴 CDN (Tailwind CSS, SheetJS, 本地雙語字典) -->
+  <!-- 外部依賴 CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="i18n.js"></script>
 </head>
 <body class="bg-slate-100 text-slate-800 min-h-screen py-8 px-4 font-sans">
-  <div class="max-w-5xl mx-auto space-y-6">
+  <div class="max-w-6xl mx-auto space-y-6">
     
     <!-- 頂部標題與語系切換 -->
     <header class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -180,10 +180,29 @@
           </button>
         </div>
 
-        <!-- 即時預覽表格 -->
+        <!-- 快速分類過濾按鈕 (Filter Tabs) -->
+        <div class="flex flex-wrap items-center gap-2 pt-2">
+          <button onclick="applyFilter('ALL')" id="tab-all" class="filter-tab active bg-slate-900 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition shadow-sm">
+            全部異常
+          </button>
+          <button onclick="applyFilter('ABS')" id="tab-abs" class="filter-tab bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-semibold px-3 py-1.5 rounded-lg transition">
+            🚨 全天缺勤 (ABS)
+          </button>
+          <button onclick="applyFilter('MISSED')" id="tab-missed" class="filter-tab bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 text-xs font-semibold px-3 py-1.5 rounded-lg transition">
+            ⚠️ 漏打卡 (Missed Checkout)
+          </button>
+          <button onclick="applyFilter('LATE')" id="tab-late" class="filter-tab bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-xs font-semibold px-3 py-1.5 rounded-lg transition">
+            遲過 9:00
+          </button>
+          <button onclick="applyFilter('EARLY')" id="tab-early" class="filter-tab bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 text-xs font-semibold px-3 py-1.5 rounded-lg transition">
+            早過 17:30
+          </button>
+        </div>
+
+        <!-- 即時預覽表格 (高亮與置頂) -->
         <div class="border border-slate-200 rounded-lg overflow-hidden max-h-96 overflow-y-auto">
           <table class="w-full text-xs text-left divide-y divide-slate-200">
-            <thead class="bg-slate-50 text-slate-700 font-bold sticky top-0">
+            <thead class="bg-slate-50 text-slate-700 font-bold sticky top-0 shadow-sm">
               <tr>
                 <th id="th-dept" class="px-3 py-2.5">部門代碼</th>
                 <th id="th-dept-name" class="px-3 py-2.5">部門名稱</th>
@@ -194,6 +213,7 @@
                 <th id="th-clk" class="px-3 py-2.5">原始打卡 (Clk1-4)</th>
                 <th id="th-in" class="px-3 py-2.5">Time IN</th>
                 <th id="th-out" class="px-3 py-2.5">Time OUT</th>
+                <th id="th-reason" class="px-3 py-2.5">異常原因 (Reason)</th>
               </tr>
             </thead>
             <tbody id="preview-body" class="divide-y divide-slate-100 bg-white"></tbody>
@@ -204,7 +224,6 @@
   </div>
 
   <script>
-    // 初始化雙語介面
     document.addEventListener("DOMContentLoaded", () => setLanguage('zh'));
 
     const fileInput = document.getElementById('file-input');
@@ -214,6 +233,8 @@
     const previewBody = document.getElementById('preview-body');
     const downloadBtn = document.getElementById('download-btn');
 
+    let allProblemRows = [];
+    let currentFilter = 'ALL';
     let outputWorkbook = null;
     let targetFileName = "Problem.xlsx";
 
@@ -278,7 +299,7 @@
 
       const rows = rawData.slice(headerRow + 2);
       const targetDepts = ['PCD', 'HOF', 'PMD', 'POD', 'QSD', 'WMD', 'ADD', 'CPD', 'SED'];
-      const problemRows = [];
+      const rawProblems = [];
 
       rows.forEach(r => {
         const dept = String(r[0] || '').trim().toUpperCase();
@@ -302,77 +323,156 @@
         const timeIn = parseFloat(r[11]) || 0;
         const timeOut = parseFloat(r[12]) || 0;
         const shift = String(r[13] || '').trim().toUpperCase();
-        const late = parseFloat(r[15]) || 0;
-        const earlyOut = parseFloat(r[16]) || 0;
-        const actual = parseFloat(r[17]) || 0;
-        const reason = String(r[23] || '').trim().toUpperCase();
+        const normal = parseFloat(r[14]) || 0;
+        const reasonRaw = String(r[23] || '').trim().toUpperCase();
+
+        // 排除休假/公眾假期
+        if (shift === 'REST' || reasonRaw === 'RES' || reasonRaw === 'PH') return;
 
         const lastClk = Math.max(clk1, clk2, clk3, clk4);
 
-        // 審計規則過濾
-        let isProblem = false;
+        // ==========================================
+        // 業務審計邏輯 (賦予優先級與 Highlight 分類)
+        // ==========================================
+        let anomalyReason = "";
+        let category = "";
+        let priority = 99; // 越小越排前
 
-        // 規則 1: 矛盾缺勤 (有打卡記錄卻記 ABS)
-        if (reason === 'ABS' && clk1 > 0) isProblem = true;
-        // 規則 2: 漏打下班卡 (上班有卡但離場為 0)
-        else if (clk1 > 0 && lastClk === clk1 && timeOut === 0 && shift !== 'REST') isProblem = true;
-        // 規則 3: 外勤/特殊任務無實質打卡 (TRAIN/SITE/MEET/EVENT/OTHER)
-        else if (clk1 === 0 && lastClk === 0 && ['TRAIN', 'SITE', 'MEET', 'EVENT', 'OTHER'].includes(reason)) isProblem = true;
-        // 規則 4: 進出打卡實質脫節 >= 30 分鐘
-        else if ((clk1 > 0 && timeIn > 0 && Math.abs(clk1 - timeIn) >= 0.5) || (lastClk > 0 && timeOut > 0 && Math.abs(lastClk - timeOut) >= 0.5 && !reason)) isProblem = true;
-        // 規則 5: 無假條工時嚴重流失 (早退 + 遲到 >= 1.5 小時)
-        else if ((late + earlyOut >= 1.5) && !reason && shift !== 'REST') isProblem = true;
+        // 🚨 優先級 1: 全天缺勤 (ABS)
+        if (reasonRaw === 'ABS') {
+          anomalyReason = clk1 > 0 ? "缺勤但有打卡 (ABS with Punch)" : "全天缺勤 (ABS)";
+          category = "ABS";
+          priority = 1;
+        }
+        // ⚠️ 優先級 2: 漏打收工卡
+        else if (clk1 > 0 && lastClk === clk1 && (timeOut === 0 || lastClk < 13.00)) {
+          anomalyReason = "漏打收工卡 (Missed Checkout)";
+          category = "MISSED";
+          priority = 2;
+        }
+        // 優先級 3: 特殊任務無實質打卡
+        else if (clk1 === 0 && lastClk === 0 && ['TRAIN', 'SITE', 'MEET', 'EVENT', 'OTHER'].includes(reasonRaw)) {
+          anomalyReason = `特殊任務無打卡 (${reasonRaw})`;
+          category = "MISSED";
+          priority = 3;
+        }
+        // 優先級 4: 遲到 (遲過 9:00 返工)
+        else if (clk1 > 9.00 && !reasonRaw) {
+          anomalyReason = `遲過九點 (Late: ${clk1.toFixed(2)} > 9:00)`;
+          category = "LATE";
+          priority = 4;
+        }
+        // 優先級 5: 早退 (早過 17:30 收工，星期一至五標準日)
+        else if (day !== 'Saturday' && normal >= 7.0 && lastClk > 0 && lastClk < 17.30 && !reasonRaw) {
+          anomalyReason = `早過五點半 (Early: ${lastClk.toFixed(2)} < 17:30)`;
+          category = "EARLY";
+          priority = 5;
+        }
 
-        if (isProblem) {
-          problemRows.push({
+        if (anomalyReason) {
+          rawProblems.push({
             dept, deptName, empCode, name, desig,
             date: dateStr, day, clk1, clk2, clk3, clk4,
             timeIn: (clk1 === 0 && lastClk === 0) ? 0 : timeIn,
-            timeOut: (clk1 === 0 && lastClk === 0) ? 0 : timeOut
+            timeOut: (clk1 === 0 && lastClk === 0) ? 0 : timeOut,
+            reason: anomalyReason,
+            category: category,
+            priority: priority
           });
         }
       });
 
-      window.lastProblemCount = problemRows.length;
-      statusText.innerText = i18nData[currentLang].complete.replace('{count}', problemRows.length);
+      // 【核心實現】：按 Priority 排序（缺勤 ABS 最先，漏打卡次之，遲到/早退在後）
+      rawProblems.sort((a, b) => a.priority - b.priority);
+      allProblemRows = rawProblems;
 
-      renderPreview(problemRows);
-      buildOutputExcel(problemRows);
+      window.lastProblemCount = allProblemRows.length;
+      statusText.innerText = i18nData[currentLang].complete.replace('{count}', allProblemRows.length);
+
+      applyFilter('ALL');
+      buildOutputExcel(allProblemRows);
+    }
+
+    function applyFilter(filterKey) {
+      currentFilter = filterKey;
+      document.querySelectorAll('.filter-tab').forEach(tab => {
+        tab.classList.remove('bg-slate-900', 'text-white');
+        tab.classList.add('bg-slate-100', 'text-slate-700');
+      });
+
+      const activeTabMap = {
+        'ALL': 'tab-all',
+        'ABS': 'tab-abs',
+        'MISSED': 'tab-missed',
+        'LATE': 'tab-late',
+        'EARLY': 'tab-early'
+      };
+
+      const activeTab = document.getElementById(activeTabMap[filterKey]);
+      if (activeTab) {
+        activeTab.classList.remove('bg-slate-100', 'text-slate-700');
+        activeTab.classList.add('bg-slate-900', 'text-white');
+      }
+
+      const filtered = filterKey === 'ALL' 
+        ? allProblemRows 
+        : allProblemRows.filter(r => r.category === filterKey);
+
+      renderPreview(filtered);
     }
 
     function renderPreview(rows) {
       previewBody.innerHTML = '';
       if (rows.length === 0) {
-        previewBody.innerHTML = `<tr><td colspan="9" class="p-4 text-center text-slate-400">${i18nData[currentLang].noData}</td></tr>`;
+        previewBody.innerHTML = `<tr><td colspan="10" class="p-6 text-center text-slate-400">${i18nData[currentLang].noData}</td></tr>`;
         return;
       }
+
       rows.forEach(r => {
         const tr = document.createElement('tr');
-        tr.className = "hover:bg-slate-50 transition";
+        
+        // 【特別 Highlight 樣式設定】：缺勤用淡紅底色，漏打卡用淡黃底色
+        let rowClass = "hover:bg-slate-50 transition border-b";
+        let badgeClass = "px-2 py-0.5 rounded text-[11px] font-semibold";
+
+        if (r.category === 'ABS') {
+          rowClass = "bg-rose-50/60 hover:bg-rose-50 transition border-b border-rose-100";
+          badgeClass += " bg-rose-100 text-rose-800 border border-rose-300 font-bold";
+        } else if (r.category === 'MISSED') {
+          rowClass = "bg-amber-50/40 hover:bg-amber-50 transition border-b border-amber-100";
+          badgeClass += " bg-amber-100 text-amber-800 border border-amber-300 font-bold";
+        } else if (r.category === 'LATE') {
+          badgeClass += " bg-blue-50 text-blue-700 border border-blue-200";
+        } else {
+          badgeClass += " bg-purple-50 text-purple-700 border border-purple-200";
+        }
+
+        tr.className = rowClass;
         tr.innerHTML = `
-          <td class="px-3 py-2 border-b font-mono font-medium">${r.dept}</td>
-          <td class="px-3 py-2 border-b text-slate-600">${r.deptName}</td>
-          <td class="px-3 py-2 border-b font-mono font-bold text-slate-800">${r.empCode}</td>
-          <td class="px-3 py-2 border-b font-medium text-slate-900">${r.name}</td>
-          <td class="px-3 py-2 border-b">${r.date}</td>
-          <td class="px-3 py-2 border-b">${r.day}</td>
-          <td class="px-3 py-2 border-b font-mono text-slate-500">${r.clk1} / ${r.clk2} / ${r.clk3} / ${r.clk4}</td>
-          <td class="px-3 py-2 border-b font-mono font-bold text-slate-700">${r.timeIn.toFixed(2)}</td>
-          <td class="px-3 py-2 border-b font-mono font-bold text-slate-700">${r.timeOut.toFixed(2)}</td>
+          <td class="px-3 py-2 font-mono font-medium">${r.dept}</td>
+          <td class="px-3 py-2 text-slate-600">${r.deptName}</td>
+          <td class="px-3 py-2 font-mono font-bold text-slate-800">${r.empCode}</td>
+          <td class="px-3 py-2 font-medium text-slate-900">${r.name}</td>
+          <td class="px-3 py-2">${r.date}</td>
+          <td class="px-3 py-2">${r.day}</td>
+          <td class="px-3 py-2 font-mono text-slate-500">${r.clk1} / ${r.clk2} / ${r.clk3} / ${r.clk4}</td>
+          <td class="px-3 py-2 font-mono font-bold text-slate-700">${r.timeIn.toFixed(2)}</td>
+          <td class="px-3 py-2 font-mono font-bold text-slate-700">${r.timeOut.toFixed(2)}</td>
+          <td class="px-3 py-2"><span class="${badgeClass}">${r.reason}</span></td>
         `;
         previewBody.appendChild(tr);
       });
     }
 
     function buildOutputExcel(rows) {
-      const header1 = ['Department Code', 'Department Name', 'Emp Code', 'Name', 'Designation', 'Date', 'Day', 'Actual Clocking', '', '', '', 'Time', ''];
-      const header2 = ['', '', '', '', '', '', '', '', '', '', '', 'IN', 'OUT'];
+      const header1 = ['Department Code', 'Department Name', 'Emp Code', 'Name', 'Designation', 'Date', 'Day', 'Actual Clocking', '', '', '', 'Time', '', 'Reason'];
+      const header2 = ['', '', '', '', '', '', '', '', '', '', '', 'IN', 'OUT', ''];
       const aoa = [header1, header2];
 
       rows.forEach(r => {
         aoa.push([
           r.dept, r.deptName, r.empCode, r.name, r.desig,
-          r.date, r.day, r.clk1, r.clk2, r.clk3, r.clk4, r.timeIn, r.timeOut
+          r.date, r.day, r.clk1, r.clk2, r.clk3, r.clk4, r.timeIn, r.timeOut, r.reason
         ]);
       });
 
