@@ -55,7 +55,7 @@ function processAttendance(wb, filename) {
   const sheet = wb.Sheets[wb.SheetNames[0]];
   const rawData = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: false });
 
-  // 1. 動態識別 Period 檔名與截數日 (25號)
+  // 1. 動態識別 Period 檔名與截數截止日 (25號截數)
   targetFileName = "Problem.xlsx";
   let cutoffLimitDate = null;
   for (let r = 0; r < Math.min(10, rawData.length); r++) {
@@ -117,21 +117,26 @@ function processAttendance(wb, filename) {
 
     const lastClk = Math.max(clk1, clk2, clk3, clk4);
 
-    // 業務審計判定與優先級
+    // ==========================================
+    // 業務審計邏輯 (有打卡者優先歸入漏打卡)
+    // ==========================================
     let anomalyReason = "";
     let category = "";
     let priority = 99;
 
-    // 🚨 優先級 1: 全天缺勤 (ABS)
-    if (reasonRaw === 'ABS') {
-      anomalyReason = clk1 > 0 ? "缺勤但有打卡 (ABS with Punch)" : "全天缺勤 (ABS)";
-      category = "ABS";
+    // ⚠️ 優先級 1: 漏打收工卡 (有上班打卡，但整天只有單次打卡或無有效收工卡)
+    // 不論系統最後一欄是否記為 ABS，本質都是漏打收工卡！
+    if (clk1 > 0 && (lastClk === clk1 || timeOut === 0 || lastClk < 13.00)) {
+      anomalyReason = reasonRaw === 'ABS' 
+        ? "漏打收工卡 (系統記ABS)" 
+        : "漏打收工卡 (Missed Checkout)";
+      category = "MISSED";
       priority = 1;
     }
-    // ⚠️ 優先級 2: 漏打收工卡
-    else if (clk1 > 0 && lastClk === clk1 && (timeOut === 0 || lastClk < 13.00)) {
-      anomalyReason = "漏打收工卡 (Missed Checkout)";
-      category = "MISSED";
+    // 🚨 優先級 2: 純全天缺勤 (打卡全為 0 且系統記為 ABS)
+    else if (reasonRaw === 'ABS') {
+      anomalyReason = "全天缺勤 (ABS)";
+      category = "ABS";
       priority = 2;
     }
     // 優先級 3: 特殊任務無實質打卡
@@ -166,7 +171,7 @@ function processAttendance(wb, filename) {
     }
   });
 
-  // 排序：ABS 最前，漏打卡第二
+  // 排序：漏打卡與 ABS 置頂
   rawProblems.sort((a, b) => a.priority - b.priority);
   allProblemRows = rawProblems;
 
@@ -214,21 +219,22 @@ function renderPreview(rows) {
 
   previewBody.innerHTML = '';
   if (rows.length === 0) {
-    previewBody.innerHTML = `<tr><td colspan="10" class="p-6 text-center text-gray-400">${i18nData[currentLang].noData}</td></tr>`;
+    previewBody.innerHTML = `<tr><td colspan="10" class="p-8 text-center text-gray-400 font-medium">${i18nData[currentLang].noData}</td></tr>`;
     return;
   }
 
   rows.forEach(r => {
     const tr = document.createElement('tr');
     
+    // 視覺高亮：ABS 用淺紅，漏打卡用淺黃
     let rowClass = "hover:bg-gray-50 transition border-b";
-    let badgeClass = "px-2 py-0.5 rounded text-xs font-semibold";
+    let badgeClass = "px-2.5 py-1 rounded text-xs font-semibold whitespace-nowrap";
 
     if (r.category === 'ABS') {
-      rowClass = "bg-red-50 hover:bg-red-100 transition border-b border-red-100";
+      rowClass = "bg-red-50/70 hover:bg-red-100/70 transition border-b border-red-100";
       badgeClass += " bg-red-100 text-red-800 border border-red-300 font-bold";
     } else if (r.category === 'MISSED') {
-      rowClass = "bg-yellow-50 hover:bg-yellow-100 transition border-b border-yellow-100";
+      rowClass = "bg-yellow-50/70 hover:bg-yellow-100/70 transition border-b border-yellow-200";
       badgeClass += " bg-yellow-100 text-yellow-800 border border-yellow-300 font-bold";
     } else if (r.category === 'LATE') {
       badgeClass += " bg-blue-50 text-blue-700 border border-blue-200";
@@ -238,16 +244,16 @@ function renderPreview(rows) {
 
     tr.className = rowClass;
     tr.innerHTML = `
-      <td class="px-3 py-2 font-mono font-medium">${r.dept}</td>
-      <td class="px-3 py-2 text-gray-600">${r.deptName}</td>
-      <td class="px-3 py-2 font-mono font-bold text-gray-800">${r.empCode}</td>
-      <td class="px-3 py-2 font-medium text-gray-900">${r.name}</td>
-      <td class="px-3 py-2">${r.date}</td>
-      <td class="px-3 py-2">${r.day}</td>
-      <td class="px-3 py-2 font-mono text-gray-500">${r.clk1} / ${r.clk2} / ${r.clk3} / ${r.clk4}</td>
-      <td class="px-3 py-2 font-mono font-bold text-gray-700">${r.timeIn.toFixed(2)}</td>
-      <td class="px-3 py-2 font-mono font-bold text-gray-700">${r.timeOut.toFixed(2)}</td>
-      <td class="px-3 py-2"><span class="${badgeClass}">${r.reason}</span></td>
+      <td class="px-3 py-2.5 font-mono font-medium">${r.dept}</td>
+      <td class="px-3 py-2.5 text-gray-600">${r.deptName}</td>
+      <td class="px-3 py-2.5 font-mono font-bold text-gray-800">${r.empCode}</td>
+      <td class="px-3 py-2.5 font-medium text-gray-900">${r.name}</td>
+      <td class="px-3 py-2.5 whitespace-nowrap">${r.date}</td>
+      <td class="px-3 py-2.5">${r.day}</td>
+      <td class="px-3 py-2.5 font-mono text-gray-500">${r.clk1} / ${r.clk2} / ${r.clk3} / ${r.clk4}</td>
+      <td class="px-3 py-2.5 font-mono font-bold text-gray-700">${r.timeIn.toFixed(2)}</td>
+      <td class="px-3 py-2.5 font-mono font-bold text-gray-700">${r.timeOut.toFixed(2)}</td>
+      <td class="px-3 py-2.5"><span class="${badgeClass}">${r.reason}</span></td>
     `;
     previewBody.appendChild(tr);
   });
