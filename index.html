@@ -44,11 +44,11 @@
   <meta name="theme-color" content="#0b192c">
   <meta name="application-name" content="JO-PPD 東淦打卡異常偵測工具">
 
-  <!-- 🛡️ CSP 資安防禦策略 -->
+  <!-- 🛡️ 修復後的 CSP (已移除 frame-ancestors 警告) -->
   <meta http-equiv="Content-Security-Policy" content="
     default-src 'self';
-    script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdn.jsdelivr.net;
-    style-src 'self' 'unsafe-inline';
+    script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net;
+    style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net;
     img-src 'self' data: https://img.shields.io https://www.jumboorient.com.hk;
     font-src 'self' data:;
     connect-src 'self';
@@ -56,7 +56,6 @@
     object-src 'none';
     base-uri 'self';
     form-action 'none';
-    frame-ancestors 'none';
   ">
   <meta http-equiv="Permissions-Policy" content="accelerometer=(), gyroscope=(), microphone=(), camera=(), geolocation=(), payment=()">
   <meta name="referrer" content="strict-origin-when-cross-origin">
@@ -109,87 +108,87 @@
   }
   </script>
 
-  <!-- 外部套件與拆分之 JS 模組 -->
-  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- 引入標準樣式與依賴 (無生產環境警告) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="i18n.js"></script>
   <script src="app.js" defer></script>
 </head>
-<body class="bg-slate-100 text-slate-800 min-h-screen py-8 px-4 font-sans">
+<body class="bg-gray-100 text-gray-800 min-h-screen py-8 px-4 font-sans">
   <div class="max-w-6xl mx-auto space-y-6">
     
     <!-- 頂部標題與語系切換 -->
-    <header class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <header class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
       <div>
         <div class="flex flex-wrap items-center gap-3">
-          <h1 id="ui-title" class="text-2xl font-bold text-slate-900 tracking-tight">東淦打卡異常偵測工具</h1>
-          <span id="ui-privacy-badge" class="bg-emerald-50 text-emerald-700 text-xs px-2.5 py-1 rounded-full border border-emerald-200 font-medium">
+          <h1 id="ui-title" class="text-2xl font-bold text-gray-900 tracking-tight">東淦打卡異常偵測工具</h1>
+          <span id="ui-privacy-badge" class="bg-green-50 text-green-700 text-xs px-2.5 py-1 rounded-full border border-green-200 font-medium">
             純前端離線解析・零數據外流風險
           </span>
         </div>
-        <p id="ui-subtitle" class="text-sm text-slate-500 mt-1">Jumbo Orient Punch Problem Detector (JO-PPD)</p>
+        <p id="ui-subtitle" class="text-sm text-gray-500 mt-1">Jumbo Orient Punch Problem Detector (JO-PPD)</p>
       </div>
-      <button onclick="toggleLanguage()" id="ui-lang-btn" class="self-start md:self-auto bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold px-3 py-2 rounded-lg border border-slate-300 transition">
+      <button onclick="toggleLanguage()" id="ui-lang-btn" class="self-start md:self-auto bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-semibold px-3 py-2 rounded-lg border border-gray-300 transition">
         English
       </button>
     </header>
 
     <!-- 說明與指引 (摺疊面板) -->
-    <details open class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 group">
-      <summary class="cursor-pointer font-semibold text-slate-800 flex justify-between items-center select-none">
-        <span id="ui-guide-title" class="text-base font-bold text-slate-900 flex items-center gap-2">
+    <details open class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 group">
+      <summary class="cursor-pointer font-semibold text-gray-800 flex justify-between items-center select-none">
+        <span id="ui-guide-title" class="text-base font-bold text-gray-900 flex items-center gap-2">
           📖 系統說明與操作指引
         </span>
-        <span class="text-xs text-slate-400 group-open:rotate-180 transition-transform">▼</span>
+        <span class="text-xs text-gray-400 group-open:rotate-180 transition-transform">▼</span>
       </summary>
-      <div class="mt-4 pt-4 border-t border-slate-100 text-sm text-slate-600 space-y-4">
+      <div class="mt-4 pt-4 border-t border-gray-100 text-sm text-gray-600 space-y-4">
         <p id="ui-guide-intro" class="leading-relaxed"></p>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-50 p-4 rounded-lg border border-slate-200">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50 p-4 rounded-lg border border-gray-200">
           <div>
-            <h4 id="ui-guide-step-title" class="font-bold text-slate-800 mb-2"></h4>
-            <ol id="ui-guide-steps" class="list-decimal list-inside space-y-1.5 text-xs text-slate-600 leading-relaxed"></ol>
+            <h4 id="ui-guide-step-title" class="font-bold text-gray-800 mb-2"></h4>
+            <ol id="ui-guide-steps" class="list-decimal list-inside space-y-1.5 text-xs text-gray-600 leading-relaxed"></ol>
           </div>
           <div>
-            <h4 id="ui-guide-rules-title" class="font-bold text-slate-800 mb-2"></h4>
-            <ul id="ui-guide-rules" class="list-disc list-inside space-y-1.5 text-xs text-slate-600 leading-relaxed"></ul>
+            <h4 id="ui-guide-rules-title" class="font-bold text-gray-800 mb-2"></h4>
+            <ul id="ui-guide-rules" class="list-disc list-inside space-y-1.5 text-xs text-gray-600 leading-relaxed"></ul>
           </div>
         </div>
       </div>
     </details>
 
     <!-- 檔案上傳區塊 -->
-    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-8">
-      <div id="drop-area" class="border-2 border-dashed border-slate-300 hover:border-blue-400 rounded-xl p-10 text-center cursor-pointer hover:bg-blue-50/30 transition">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+      <div id="drop-area" class="border-2 border-dashed border-gray-300 hover:border-blue-400 rounded-xl p-10 text-center cursor-pointer hover:bg-blue-50 transition">
         <input type="file" id="file-input" accept=".xls,.xlsx" class="hidden">
-        <svg class="mx-auto h-12 w-12 text-slate-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg class="mx-auto h-12 w-12 text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
         </svg>
-        <h3 id="ui-drop-title" class="text-base font-bold text-slate-800"></h3>
-        <p id="ui-drop-subtitle" class="text-xs text-slate-500 mt-1"></p>
-        <p id="ui-drop-notice" class="text-[11px] text-emerald-600 font-medium mt-3"></p>
+        <h3 id="ui-drop-title" class="text-base font-bold text-gray-800"></h3>
+        <p id="ui-drop-subtitle" class="text-xs text-gray-500 mt-1"></p>
+        <p id="ui-drop-notice" class="text-xs text-green-600 font-medium mt-3"></p>
       </div>
 
       <!-- 解析結果面板 -->
       <div id="status-panel" class="mt-6 hidden space-y-4">
-        <div class="flex flex-col sm:flex-row items-center justify-between gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-4 bg-gray-50 p-4 rounded-xl border border-gray-200">
           <div class="flex items-center gap-2">
-            <span class="inline-block w-2.5 h-2.5 bg-emerald-500 rounded-full animate-pulse"></span>
-            <span id="status-text" class="text-sm font-semibold text-slate-800"></span>
+            <span class="inline-block w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse"></span>
+            <span id="status-text" class="text-sm font-semibold text-gray-800"></span>
           </div>
           <button id="download-btn" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-5 py-2.5 rounded-lg shadow-sm transition">
             下載 Problem.xlsx 報表
           </button>
         </div>
 
-        <!-- 快速分類過濾標籤 -->
+        <!-- 快速分類標籤 -->
         <div class="flex flex-wrap items-center gap-2 pt-2">
-          <button onclick="applyFilter('ALL')" id="tab-all" class="filter-tab active bg-slate-900 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition shadow-sm">
+          <button onclick="applyFilter('ALL')" id="tab-all" class="filter-tab active bg-gray-900 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition shadow-sm">
             全部異常
           </button>
-          <button onclick="applyFilter('ABS')" id="tab-abs" class="filter-tab bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-semibold px-3 py-1.5 rounded-lg transition">
+          <button onclick="applyFilter('ABS')" id="tab-abs" class="filter-tab bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 text-xs font-semibold px-3 py-1.5 rounded-lg transition">
             🚨 全天缺勤 (ABS)
           </button>
-          <button onclick="applyFilter('MISSED')" id="tab-missed" class="filter-tab bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 text-xs font-semibold px-3 py-1.5 rounded-lg transition">
+          <button onclick="applyFilter('MISSED')" id="tab-missed" class="filter-tab bg-yellow-50 hover:bg-yellow-100 text-yellow-700 border border-yellow-200 text-xs font-semibold px-3 py-1.5 rounded-lg transition">
             ⚠️ 漏打卡 (Missed Checkout)
           </button>
           <button onclick="applyFilter('LATE')" id="tab-late" class="filter-tab bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-xs font-semibold px-3 py-1.5 rounded-lg transition">
@@ -200,5 +199,28 @@
           </button>
         </div>
 
-        <!-- 即時預覽表格 -->
-        <div class="border border-slate-2
+        <!-- 即時預覽表格 (已包含 id="preview-body") -->
+        <div class="border border-gray-200 rounded-lg overflow-hidden max-h-96 overflow-y-auto">
+          <table class="w-full text-xs text-left divide-y divide-gray-200">
+            <thead class="bg-gray-50 text-gray-700 font-bold sticky top-0 shadow-sm">
+              <tr>
+                <th id="th-dept" class="px-3 py-2.5">部門代碼</th>
+                <th id="th-dept-name" class="px-3 py-2.5">部門名稱</th>
+                <th id="th-emp" class="px-3 py-2.5">工號</th>
+                <th id="th-name" class="px-3 py-2.5">姓名</th>
+                <th id="th-date" class="px-3 py-2.5">日期</th>
+                <th id="th-day" class="px-3 py-2.5">星期</th>
+                <th id="th-clk" class="px-3 py-2.5">原始打卡 (Clk1-4)</th>
+                <th id="th-in" class="px-3 py-2.5">Time IN</th>
+                <th id="th-out" class="px-3 py-2.5">Time OUT</th>
+                <th id="th-reason" class="px-3 py-2.5">異常原因 (Reason)</th>
+              </tr>
+            </thead>
+            <tbody id="preview-body" class="divide-y divide-gray-100 bg-white"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
