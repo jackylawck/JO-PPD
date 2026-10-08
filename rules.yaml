@@ -1,0 +1,45 @@
+# 考勤審計規則配置檔 (Punch Problem Detector)
+
+cutoff_day: 25
+
+target_departments:
+  - 'PCD'
+  - 'HOF'
+  - 'PMD'
+  - 'POD'
+  - 'QSD'
+  - 'WMD'
+  - 'ADD'
+  - 'CPD'
+  - 'SED'
+
+rules:
+  # 1. 矛盾缺勤：有打卡記錄但狀態為 ABS
+  - id: punch_with_absent
+    name: "有打卡被記缺勤"
+    condition: "Reason == 'ABS' and Clk1 > 0"
+
+  # 2. 漏打下班卡：工作日只有上班卡且離場為 0
+  - id: missed_checkout
+    name: "工作日漏打下班卡"
+    condition: "Clk1 > 0 and Last_Clk == Clk1 and Time_Out == 0 and Shift != 'REST'"
+
+  # 3. 外勤/培訓但無實質打卡
+  - id: auto_duty_zero_punch
+    name: "特殊任務無實質打卡"
+    condition: "Clk1 == 0 and Clk2 == 0 and Clk3 == 0 and Clk4 == 0 and Reason in ['TRAIN', 'SITE', 'MEET', 'EVENT', 'OTHER']"
+
+  # 4. 實質打卡脫節：上班或下班打卡與系統記錄脫節超過 30 分鐘 (0.5小時)
+  - id: punch_mismatch_half_hour
+    name: "進出打卡實質脫節"
+    condition: "(Clk1 > 0 and Time_In > 0 and abs(Clk1 - Time_In) >= 0.5) or (Last_Clk > 0 and Time_Out > 0 and abs(Last_Clk - Time_Out) >= 0.5 and Reason == '')"
+
+  # 5. 合併工時嚴重流失 (早退 + 遲到累計 >= 1.5 小時且未請假)
+  - id: cumulative_lost_time
+    name: "無假條工時嚴重流失"
+    condition: "(Late + Early_Out >= 1.5) and Reason == '' and Shift != 'REST'"
+
+exclude_conditions:
+  - "Shift == 'REST'"
+  - "Reason == 'RES'"
+  - "Reason == 'PH'"
