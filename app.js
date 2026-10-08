@@ -1,4 +1,4 @@
-// app.js - Jumbo Orient Punch Problem Detector 核心業務審計引擎 (單次打卡精準判定版)
+// app.js - Jumbo Orient Punch Problem Detector 核心業務審計引擎 (Time OUT 聯動校正版)
 let allProblemRows = [];
 let currentFilter = 'ALL';
 let outputWorkbook = null;
@@ -55,7 +55,7 @@ function processAttendance(wb, filename) {
   const sheet = wb.Sheets[wb.SheetNames[0]];
   const rawData = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: false });
 
-  // 1. 動態識別 Period 檔名與截數截止日 (25號截數)
+  // 1. 動態識別 Period 檔名與截數日 (25號截數)
   targetFileName = "Problem.xlsx";
   let cutoffLimitDate = null;
   for (let r = 0; r < Math.min(10, rawData.length); r++) {
@@ -122,34 +122,36 @@ function processAttendance(wb, filename) {
     // 正當外勤名單全面放行
     const isApprovedDuty = ['SITE', 'MEET', 'TRAIN', 'EVENT', 'OTHER', 'LEAVE', 'TRIP', 'OFF'].includes(reasonRaw);
 
-    // ==========================================
-    // 簡單精確判定邏輯 (以次數為準)
-    // ==========================================
+    // ==============================================================
+    // 真正精確業務判定 (Time OUT 聯動)
+    // ==============================================================
     let anomalyReason = "";
     let category = "";
     let priority = 99;
 
-    // ⚠️ 規則 1: 漏打卡（整天剛好只有 1 次打卡，且非外勤）
-    if (punchCount === 1 && !isApprovedDuty) {
-      anomalyReason = "漏打卡 (單次打卡)";
+    // ⚠️ 規則 1: 真正的漏打收工卡
+    // 條件：有上班打卡 (clk1 > 0 或 timeIn > 0)，但系統完全無收工紀錄 (timeOut == 0)
+    // 且下午無打卡 (lastClk < 13.00)，且非正當外勤
+    if ((clk1 > 0 || timeIn > 0) && timeOut === 0 && lastClk < 13.00 && !isApprovedDuty) {
+      anomalyReason = "漏打收工卡 (Time OUT 未記錄)";
       category = "MISSED";
       priority = 1;
     }
-    // 🚨 規則 2: 全天缺勤（整天 0 次打卡，且系統註記 ABS）
+    // 🚨 規則 2: 全天缺勤 (0次打卡且系統記為 ABS)
     else if (punchCount === 0 && reasonRaw === 'ABS') {
       anomalyReason = "全天缺勤 (ABS)";
       category = "ABS";
       priority = 2;
     }
-    // 規則 3: 遲過九點返工 (首度打卡 > 9:00，非請假非外勤)
+    // 規則 3: 遲過九點返工 (首度打卡 > 9:00，非外勤非請假)
     else if (clk1 > 9.00 && !reasonRaw && !isApprovedDuty) {
       anomalyReason = `遲過九點 (Late: ${clk1.toFixed(2)} > 9:00)`;
       category = "LATE";
       priority = 3;
     }
-    // 規則 4: 早過五點半收工 (星期一至五標準班次，最後打卡 < 17:30，非請假非外勤)
-    else if (day !== 'Saturday' && normal >= 7.0 && lastClk > 0 && lastClk < 17.30 && !reasonRaw && !isApprovedDuty) {
-      anomalyReason = `早過五點半 (Early: ${lastClk.toFixed(2)} < 17:30)`;
+    // 規則 4: 早過五點半收工 (星期一至五標準班次，打卡與系統收工皆早過 17:30，非外勤非請假)
+    else if (day !== 'Saturday' && normal >= 7.0 && Math.max(lastClk, timeOut) > 0 && Math.max(lastClk, timeOut) < 17.30 && !reasonRaw && !isApprovedDuty) {
+      anomalyReason = `早過五點半 (Early: ${Math.max(lastClk, timeOut).toFixed(2)} < 17:30)`;
       category = "EARLY";
       priority = 4;
     }
