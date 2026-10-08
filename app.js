@@ -1,4 +1,4 @@
-// app.js - Jumbo Orient Punch Problem Detector 核心業務審計引擎 (Simple & Robust Rules)
+// app.js - Jumbo Orient Punch Problem Detector 核心業務審計引擎 (單次打卡精準判定版)
 let allProblemRows = [];
 let currentFilter = 'ALL';
 let outputWorkbook = null;
@@ -55,7 +55,7 @@ function processAttendance(wb, filename) {
   const sheet = wb.Sheets[wb.SheetNames[0]];
   const rawData = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: false });
 
-  // 1. 動態識別 Period 檔名與截數日 (25號)
+  // 1. 動態識別 Period 檔名與截數截止日 (25號截數)
   targetFileName = "Problem.xlsx";
   let cutoffLimitDate = null;
   for (let r = 0; r < Math.min(10, rawData.length); r++) {
@@ -115,54 +115,51 @@ function processAttendance(wb, filename) {
     // 排除休假/公眾假期
     if (shift === 'REST' || reasonRaw === 'RES' || reasonRaw === 'PH') return;
 
+    // 計算打卡總次數與最後打卡時間
+    const punchCount = [clk1, clk2, clk3, clk4].filter(c => c > 0).length;
     const lastClk = Math.max(clk1, clk2, clk3, clk4);
 
-    // ==============================================================
-    // 簡單清晰業務規則 (Simple Corporate Rules)
-    // ==============================================================
+    // 正當外勤名單全面放行
+    const isApprovedDuty = ['SITE', 'MEET', 'TRAIN', 'EVENT', 'OTHER', 'LEAVE', 'TRIP', 'OFF'].includes(reasonRaw);
+
+    // ==========================================
+    // 簡單精確判定邏輯 (以次數為準)
+    // ==========================================
     let anomalyReason = "";
     let category = "";
     let priority = 99;
 
-    // 🚨 規則 1: 缺勤 (ABS) -> 優先級最高
-    if (reasonRaw === 'ABS') {
-      anomalyReason = clk1 > 0 ? "缺勤但有打卡 (ABS with Punch)" : "全天缺勤 (ABS)";
-      category = "ABS";
+    // ⚠️ 規則 1: 漏打卡（整天剛好只有 1 次打卡，且非外勤）
+    if (punchCount === 1 && !isApprovedDuty) {
+      anomalyReason = "漏打卡 (單次打卡)";
+      category = "MISSED";
       priority = 1;
     }
-    // ⚠️ 規則 2: 真正的漏打收工卡
-    // 判定標準：有上班打卡 (clk1 > 0)，但實質沒有下午/收工時間 (timeOut == 0 且 lastClk < 13.00)
-    // 若 timeOut >= 17.30，代表系統已有有效收工記錄，不算漏打卡！
-    else if (clk1 > 0 && timeOut === 0 && lastClk < 13.00) {
-      anomalyReason = "漏打收工卡 (Missed Checkout)";
-      category = "MISSED";
+    // 🚨 規則 2: 全天缺勤（整天 0 次打卡，且系統註記 ABS）
+    else if (punchCount === 0 && reasonRaw === 'ABS') {
+      anomalyReason = "全天缺勤 (ABS)";
+      category = "ABS";
       priority = 2;
     }
-    // 規則 3: 特殊任務無實質打卡 (如 TRAIN/SITE)
-    else if (clk1 === 0 && lastClk === 0 && ['TRAIN', 'SITE', 'MEET', 'EVENT', 'OTHER'].includes(reasonRaw)) {
-      anomalyReason = `特殊任務無打卡 (${reasonRaw})`;
-      category = "MISSED";
-      priority = 3;
-    }
-    // 規則 4: 遲過九點返工 (Clk1 > 9:00 AM)
-    else if (clk1 > 9.00 && !reasonRaw) {
+    // 規則 3: 遲過九點返工 (首度打卡 > 9:00，非請假非外勤)
+    else if (clk1 > 9.00 && !reasonRaw && !isApprovedDuty) {
       anomalyReason = `遲過九點 (Late: ${clk1.toFixed(2)} > 9:00)`;
       category = "LATE";
-      priority = 4;
+      priority = 3;
     }
-    // 規則 5: 早過五點半收工 (星期一至五，最後打卡與系統收工皆早於 17:30，且非半日班)
-    else if (day !== 'Saturday' && normal >= 7.0 && lastClk > 0 && lastClk < 17.30 && timeOut < 17.30 && !reasonRaw) {
-      anomalyReason = `早過五點半 (Early: ${Math.max(lastClk, timeOut).toFixed(2)} < 17:30)`;
+    // 規則 4: 早過五點半收工 (星期一至五標準班次，最後打卡 < 17:30，非請假非外勤)
+    else if (day !== 'Saturday' && normal >= 7.0 && lastClk > 0 && lastClk < 17.30 && !reasonRaw && !isApprovedDuty) {
+      anomalyReason = `早過五點半 (Early: ${lastClk.toFixed(2)} < 17:30)`;
       category = "EARLY";
-      priority = 5;
+      priority = 4;
     }
 
     if (anomalyReason) {
       rawProblems.push({
         dept, deptName, empCode, name, desig,
         date: dateStr, day, clk1, clk2, clk3, clk4,
-        timeIn: (clk1 === 0 && lastClk === 0) ? 0 : timeIn,
-        timeOut: (clk1 === 0 && lastClk === 0) ? 0 : timeOut,
+        timeIn: (punchCount === 0) ? 0 : timeIn,
+        timeOut: (punchCount === 0) ? 0 : timeOut,
         reason: anomalyReason,
         category: category,
         priority: priority
@@ -170,7 +167,7 @@ function processAttendance(wb, filename) {
     }
   });
 
-  // 排序：ABS 最前，漏打卡第二，遲到早退在後
+  // 排序：漏打卡與 ABS 置頂
   rawProblems.sort((a, b) => a.priority - b.priority);
   allProblemRows = rawProblems;
 
@@ -225,7 +222,6 @@ function renderPreview(rows) {
   rows.forEach(r => {
     const tr = document.createElement('tr');
     
-    // 視覺高亮
     let rowClass = "hover:bg-gray-50 transition border-b";
     let badgeClass = "px-2.5 py-1 rounded text-xs font-semibold whitespace-nowrap";
 
