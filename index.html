@@ -9,8 +9,8 @@
 
   <!-- 🏢 基礎 SEO 核心標籤：東淦工程創科項目 -->
   <title>Jumbo Orient Punch Problem Detector 東淦打卡異常偵測工具 | 東淦工程有限公司 (Jumbo Orient Contracting Limited)</title>
-  <meta name="description" content="Jumbo Orient Punch Problem Detector (東淦打卡異常偵測工具 / JO-PPD) 是東淦工程有限公司（Jumbo Orient Contracting Limited）自主研發之企業級無伺服器考勤完整性審計引擎。落實純前端零數據外洩架構，自動化解析複雜打卡紀錄並秒級生成標準化 Problem Log 稽核日誌。">
-  <meta name="keywords" content="東淦工程, 東淦工程有限公司, Jumbo Orient, Jumbo Orient Contracting Limited, JO-PPD, 打卡異常偵測工具, 考勤審計, 考勤完整性, 數位轉型, 智慧建造, 人力資源科技, HR Tech, SheetJS, 純前端運算, 數據隱私保護, 企業管治">
+  <meta name="description" content="Jumbo Orient Punch Problem Detector (東淦打卡異常偵測工具 / JO-PPD) 是東淦工程有限公司（Jumbo Orient Contracting Limited）自主研發之企業級無伺服器考勤完整性審計引擎。落實純前端零數據外洩架構，嚴格遵從香港私隱條例(Cap. 486)、GDPR、EU AI Act 及 ISO 27001/27701/42001 標準。">
+  <meta name="keywords" content="東淦工程, 東淦工程有限公司, Jumbo Orient, Jumbo Orient Contracting Limited, JO-PPD, 打卡異常偵測工具, 考勤審計, 考勤完整性, 數位轉型, 智慧建造, 人力資源科技, HR Tech, SheetJS, 純前端運算, 數據隱私保護, ISO 27001, ISO 27701, ISO 42001, GDPR, EU AI Act, 企業管治">
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://jackylawck.github.io/JO-PPD/">
 
@@ -22,7 +22,7 @@
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://jackylawck.github.io/JO-PPD/">
   <meta property="og:title" content="Jumbo Orient Punch Problem Detector 東淦打卡異常偵測工具 | 東淦工程創科項目">
-  <meta property="og:description" content="零伺服器傳輸、極致數據安全。東淦工程自主構建之純前端考勤異常審計工作站，以高精度規則自動偵測脫節打卡與考勤矛盾，引領營造業人力資源數位轉型。">
+  <meta property="og:description" content="零伺服器傳輸、極致數據安全。東淦工程自主構建之純前端考勤異常審計工作站，嚴格落實香港 Cap. 486、GDPR、EU AI Act 及 ISO/IEC 42001/27001 標準。">
   <meta property="og:image" content="https://www.jumboorient.com.hk/assets/jumbo-orient-og-banner.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
@@ -102,7 +102,7 @@
         "publisher": {
           "@id": "https://www.jumboorient.com.hk/#organization"
         },
-        "description": "企業級純前端考勤完整性與打卡異常自動化審計系統，透過高精度判定規則自動識別缺勤矛盾、打卡脫節與漏簽異常，保障數據私隱與零外洩風險。"
+        "description": "企業級純前端考勤完整性與打卡異常自動化審計系統，貫徹香港 Cap. 486、GDPR、EU AI Act 及 ISO 27001/27701/42001 標準規範。"
       }
     ]
   }
@@ -115,7 +115,6 @@
   <script src="app.js" defer></script>
 </head>
 <body class="bg-gray-100 text-gray-800 min-h-screen py-8 px-4 font-sans">
-  <!-- 寬屏自適應容器 (max-w-7xl) -->
   <div class="max-w-7xl mx-auto space-y-6">
     
     <!-- 頂部標題與語系切換 -->
@@ -134,7 +133,7 @@
       </button>
     </header>
 
-    <!-- 說明與指引 (摺疊面板) -->
+    <!-- 說明與指引 (摺疊面板，包含合規專題區塊) -->
     <details open class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 group">
       <summary class="cursor-pointer font-semibold text-gray-800 flex justify-between items-center select-none">
         <span id="ui-guide-title" class="text-base font-bold text-gray-900 flex items-center gap-2">
@@ -142,8 +141,10 @@
         </span>
         <span class="text-xs text-gray-400 group-open:rotate-180 transition-transform">▼</span>
       </summary>
-      <div class="mt-4 pt-4 border-t border-gray-100 text-sm text-gray-600 space-y-4">
+      <div class="mt-4 pt-4 border-t border-gray-100 text-sm text-gray-600 space-y-5">
         <p id="ui-guide-intro" class="leading-relaxed"></p>
+
+        <!-- 業務步驟與基準 -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50 p-4 rounded-lg border border-gray-200">
           <div>
             <h4 id="ui-guide-step-title" class="font-bold text-gray-800 mb-2"></h4>
@@ -153,6 +154,13 @@
             <h4 id="ui-guide-rules-title" class="font-bold text-gray-800 mb-2"></h4>
             <ul id="ui-guide-rules" class="list-disc list-inside space-y-1.5 text-xs text-gray-600 leading-relaxed"></ul>
           </div>
+        </div>
+
+        <!-- 🏛️ 法規與 ISO 標準合規區塊 -->
+        <div class="bg-blue-50/50 p-4 rounded-lg border border-blue-100">
+          <h4 id="ui-compliance-title" class="font-bold text-blue-900 text-sm mb-1"></h4>
+          <p id="ui-compliance-intro" class="text-xs text-gray-600 mb-3"></p>
+          <div id="ui-compliance-badges" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3"></div>
         </div>
       </div>
     </details>
@@ -169,7 +177,7 @@
         <p id="ui-drop-notice" class="text-xs text-green-600 font-medium mt-3"></p>
       </div>
 
-      <!-- 解析結果面板 (擴充至全頁視覺) -->
+      <!-- 解析結果面板 -->
       <div id="status-panel" class="mt-8 hidden space-y-4">
         <div class="flex flex-col sm:flex-row items-center justify-between gap-4 bg-gray-50 p-4 rounded-xl border border-gray-200">
           <div class="flex items-center gap-2">
@@ -200,7 +208,7 @@
           </button>
         </div>
 
-        <!-- 即時預覽表格 (加長至 min-h-[600px] 大視窗) -->
+        <!-- 即時預覽表格 (全頁大視窗) -->
         <div class="border border-gray-200 rounded-xl overflow-hidden min-h-[600px] max-h-[85vh] overflow-y-auto shadow-inner bg-white">
           <table class="w-full text-xs text-left divide-y divide-gray-200">
             <thead class="bg-gray-50 text-gray-700 font-bold sticky top-0 shadow-sm z-10">
