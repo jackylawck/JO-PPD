@@ -56,6 +56,5 @@ This system is an enterprise internal audit utility engineered for Jumbo Orient 
 如對本項目之科技架構、數據合規或法規適用性有任何治理諮詢，請聯絡：
 
 * **企業實體:** 東淦工程有限公司 (Jumbo Orient Contracting Limited)
-* **管治顧問 / 架構師:** 羅子淇 (Jacky Law)
-* **官方網址:** [https://www.jumboorient.com.hk/](https://www.jumboorient.com.hk/)
+* **架構師:** 羅子淇 (Jacky Law)
 * **開放源碼庫:** [https://github.com/jackylawck/JO-PPD](https://github.com/jackylawck/JO-PPD)
